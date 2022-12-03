@@ -10,13 +10,13 @@ else
 endif
 
 # ========= EDIT HERE =========
-OUT_FILENAME := 6502-gba
+OUT_FILENAME := 6502
 
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 
-SRC_SUBDIRS := scene images entity
+SRC_SUBDIRS :=
 
 ifeq ($(CURRENT_OS),UNIX)
 	CC      := arm-none-eabi-gcc
@@ -78,7 +78,7 @@ clean:
 $(OUT): $(OUT_ELF)
 	$(OBJCOPY) -O binary $^ $@
 
-$(OUT_ELF): $(OBJ) | $(BIN_DIR)
+$(OUT_ELF): $(OBJ_DIR)/crt0.o $(filter-out $(OBJ_DIR)/crt0.o,$(OBJ)) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s | $(OBJ_DIRECTORIES)

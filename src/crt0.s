@@ -39,10 +39,10 @@ _start:
         .long   0xaf3cf087,0x8be425d6,0x72ac0a38,0x07f8d421
 
     @ Game Title
-        .ascii  "MINICRAFTGBA"
+        .ascii  "XXXXXXXXXXXX"
 
     @ Game Code
-        .ascii  "ZMCE"
+        .ascii  "XXXX"
 
     @ Maker Code
         .byte   0x00,0x00
@@ -63,7 +63,7 @@ _start:
         .byte   0x00
 
     @ Complement Check
-        .byte   0xbb
+        .byte   0xd1
 
     @ Reserved (2 Bytes)
         .space  2, 0x00
@@ -73,7 +73,7 @@ _start:
 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
     @ Cart Backup ID
-        .ascii  "FLASH1M_Vnnn"
+        .ascii  "SRAM_Vnnn"
 
 .global start_vector
 .align
