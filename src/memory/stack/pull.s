@@ -15,50 +15,44 @@
 
 .text
 
-.global AgbMain
-AgbMain:
-    bl      reset
-
-1: @ infinite loop
-    bl      fetch_instruction
-
-    b       1b
-
-.align
-.pool
-
+.global stack_pull_byte
 @ output:
-@   r0 = instruction
-fetch_instruction:
-    push    {r4, r5, lr}
+@   r0 = pulled byte
+stack_pull_byte:
+    push    {lr}
 
-    ldr     r4, =reg_pc                 @ r4 = pointer to pc
-    ldrh    r5, [r4]                    @ r5 = pc value
+    ldr     r1, =reg_sp                 @ r1 = pointer to sp
+    ldrb    r0, [r1]                    @ r0 = sp value
 
-    mov     r0, r5
-    bl      memory_read_byte            @ r0 = fetched instruction
+    @ increment sp
+    add     r0, #1
+    strb    r0, [r1]
 
-    @ increment pc
-    add     r5, #1
-    strh    r5, [r4]
+    and     r0, #0xff
+    add     r0, #0x100
+    bl      memory_read_byte            @ sets r0 to read byte
 
-    pop     {r4, r5, lr}
+    pop     {lr}
     bx      lr
 
 .align
 .pool
 
-@ Load reset vector into PC
-reset:
-    push    {lr}
+.global stack_pull_word
+@ output:
+@   r0 = pulled word
+stack_pull_word:
+    push    {r4, lr}
 
-    ldr     r0, =0xfffc
-    bl      memory_read_word            @ r0 = reset vector address
+    @ lo byte
+    bl      stack_pull_byte             @ sets r0 to pulled byte
+    mov     r4, r0
 
-    ldr     r1, =reg_pc
-    strh    r0, [r1]
+    @ hi byte
+    bl      stack_pull_byte
+    orr     r0, r4, r0, lsl #8
 
-    pop     {lr}
+    pop     {r4, lr}
     bx      lr
 
 .end

@@ -13,17 +13,47 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-.data
+.text
 
-.global reg_pc, reg_a, reg_x, reg_y, reg_sp, reg_ps
+.global memory_read_byte
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = byte read
+memory_read_byte:
+    ldr     r1, =0xffff
+    and     r0, r1
+
+    @ TODO
+    mov     r0, #0
+
+    bx      lr
 
 .align
-reg_pc: .hword 0
+.pool
 
-reg_a:  .byte 0
-reg_x:  .byte 0
-reg_y:  .byte 0
-reg_sp: .byte 0
-reg_ps: .byte 0
+.global memory_read_word
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = read word
+memory_read_word:
+    push    {r4, r5, lr}
+
+    mov     r4, r0                      @ r4 = addr
+
+    @ lo byte
+    bl      memory_read_byte
+    mov     r5, r0                      @ r5 = tmp value
+
+    @ hi byte
+    add     r0, r4, #1
+    bl      memory_read_byte
+    orr     r0, r5, r0, lsl #8
+
+    pop     {r4, r5, lr}
+    bx      lr
 
 .end

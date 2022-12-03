@@ -15,27 +15,34 @@
 
 .text
 
-.global memory_read_byte
-@ input:
-@   r0 = addr
-@
-@ output:
-@   r0 = byte read
-memory_read_byte:
-    ldr     r1, =0xffff
-    and     r0, r1
-
-    @ TODO
-    mov     r0, #0
-
-    bx      lr
-
+.global memory_write_byte
 @ input:
 @   r0 = addr
 @   r1 = value
 memory_write_byte:
+    ldr     r2, =0xffff
+    and     r0, r2
+
+    mov     r2, #0xff
+    and     r1, r2
+
     @ TODO
 
+    bx      lr
+
+.align
+.pool
+
+.global memory_write_word
+@ input:
+@   r0 = addr
+@   r1 = value
+memory_write_word:
+    push    {lr}
+
+    @ TODO
+
+    pop     {lr}
     bx      lr
 
 .end
