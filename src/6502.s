@@ -21,6 +21,8 @@ AgbMain:
 
 1: @ infinite loop
     bl      fetch_instruction
+    bl      decode_instruction
+    bl      execute_instruction
 
     b       1b
 
