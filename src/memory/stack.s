@@ -15,6 +15,31 @@
 
 .text
 
+@@@ BYTE @@@
+
+.global stack_pull_byte
+@ output:
+@   r0 = pulled byte
+stack_pull_byte:
+    push    {lr}
+
+    ldr     r1, =reg_sp                 @ r1 = pointer to sp
+    ldrb    r0, [r1]                    @ r0 = sp value
+
+    @ increment sp
+    add     r0, #1
+    strb    r0, [r1]
+
+    and     r0, #0xff
+    add     r0, #0x100
+    bl      memory_read_byte            @ sets r0 to read byte
+
+    pop     {lr}
+    bx      lr
+
+.align
+.pool
+
 .global stack_push_byte
 @ input:
 @   r0 = byte to push
@@ -33,6 +58,28 @@ stack_push_byte:
     strb    r5, [r4]
 
     pop     {r4, r5, lr}
+    bx      lr
+
+.align
+.pool
+
+@@@ WORD @@@
+
+.global stack_pull_word
+@ output:
+@   r0 = pulled word
+stack_pull_word:
+    push    {r4, lr}
+
+    @ lo byte
+    bl      stack_pull_byte             @ sets r0 to pulled byte
+    mov     r4, r0
+
+    @ hi byte
+    bl      stack_pull_byte
+    orr     r0, r4, r0, lsl #8
+
+    pop     {r4, lr}
     bx      lr
 
 .align

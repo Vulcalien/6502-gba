@@ -15,6 +15,26 @@
 
 .text
 
+@@@ BYTE @@@
+
+.global memory_read_byte
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = byte read
+memory_read_byte:
+    ldr     r1, =0xffff
+    and     r0, r1
+
+    @ TODO
+    mov     r0, #0
+
+    bx      lr
+
+.align
+.pool
+
 .global memory_write_byte
 @ input:
 @   r0 = addr
@@ -33,16 +53,53 @@ memory_write_byte:
 .align
 .pool
 
+@@@ WORD @@@
+
+.global memory_read_word
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = read word
+memory_read_word:
+    push    {r4, r5, lr}
+
+    mov     r4, r0                      @ r4 = addr
+
+    @ lo byte
+    bl      memory_read_byte
+    mov     r5, r0                      @ r5 = tmp value
+
+    @ hi byte
+    add     r0, r4, #1
+    bl      memory_read_byte
+    orr     r0, r5, r0, asr #8
+
+    pop     {r4, r5, lr}
+    bx      lr
+
+.align
+.pool
+
 .global memory_write_word
 @ input:
 @   r0 = addr
 @   r1 = value
 memory_write_word:
-    push    {lr}
+    push    {r4, r5, lr}
 
-    @ TODO
+    mov     r4, r0                      @ r4 = addr
+    mov     r5, r1                      @ r5 = val
 
-    pop     {lr}
+    @ lo byte
+    bl      memory_write_byte
+
+    @ hi byte
+    mov     r0, r4
+    asr     r1, r5, #8
+    bl      memory_write_byte
+
+    pop     {r4, r5, lr}
     bx      lr
 
 .end
