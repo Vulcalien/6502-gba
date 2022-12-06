@@ -20,8 +20,8 @@ AgbMain:
     bl      reset
 
 1: @ infinite loop
-    bl      fetch_instruction
-    bl      decode_instruction
+    bl      fetch_instruction           @ r0 = fetched instruction
+    bl      decode_instruction          @ r0 = 6502 instruction address
     bl      execute_instruction
 
     b       1b

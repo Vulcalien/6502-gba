@@ -21,7 +21,10 @@
 execute_instruction:
     push    {lr}
 
-    @ TODO
+    @ call 6502 instruction
+    ldr     lr, =1f                     @ manually set lr
+    bx      r0
+1:
 
     pop     {lr}
     bx      lr

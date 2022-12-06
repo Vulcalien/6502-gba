@@ -32,7 +32,7 @@ stack_pull_byte:
 
     and     r0, #0xff
     add     r0, #0x100
-    bl      memory_read_byte            @ sets r0 to read byte
+    bl      memory_read_byte            @ r0 = read byte
 
     pop     {lr}
     bx      lr
@@ -72,7 +72,7 @@ stack_pull_word:
     push    {r4, lr}
 
     @ lo byte
-    bl      stack_pull_byte             @ sets r0 to pulled byte
+    bl      stack_pull_byte             @ r0 = pulled byte
     mov     r4, r0
 
     @ hi byte
