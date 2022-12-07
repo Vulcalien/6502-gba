@@ -15,15 +15,16 @@
 
 .data
 
-.global reg_pc, reg_a, reg_x, reg_y, reg_s, reg_sp
+.global reg_pc, reg_a, reg_x, reg_y, reg_s, reg_status
 
 .align
-reg_pc: .hword 0
+reg_pc:     .hword 0                    @ Program Counter
 
-reg_a:  .byte 0
-reg_x:  .byte 0
-reg_y:  .byte 0
-reg_s:  .byte 0
-reg_sp: .byte 0
+reg_a:      .byte 0                     @ Accumulator
+reg_x:      .byte 0                     @ X Register
+reg_y:      .byte 0                     @ Y Register
+reg_s:      .byte 0                     @ Stack Pointer
+
+reg_status: .byte 0                     @ Processor Status
 
 .end

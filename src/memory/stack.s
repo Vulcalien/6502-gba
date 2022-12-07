@@ -23,7 +23,7 @@
 stack_pull_byte:
     push    {lr}
 
-    ldr     r1, =reg_sp                 @ r1 = pointer to sp
+    ldr     r1, =reg_s                  @ r1 = pointer to sp
     ldrb    r0, [r1]                    @ r0 = sp value
 
     @ increment sp
@@ -46,7 +46,7 @@ stack_pull_byte:
 stack_push_byte:
     push    {r4, r5, lr}
 
-    ldr     r4, =reg_sp                 @ r4 = pointer to sp
+    ldr     r4, =reg_s                  @ r4 = pointer to sp
     ldrb    r5, [r4]                    @ r5 = sp value
 
     mov     r1, r0                      @ r1 = value
