@@ -15,7 +15,7 @@
 
 .data
 
-.global reg_pc, reg_a, reg_x, reg_y, reg_sp, reg_ps
+.global reg_pc, reg_a, reg_x, reg_y, reg_s, reg_sp
 
 .align
 reg_pc: .hword 0
@@ -23,7 +23,7 @@ reg_pc: .hword 0
 reg_a:  .byte 0
 reg_x:  .byte 0
 reg_y:  .byte 0
+reg_s:  .byte 0
 reg_sp: .byte 0
-reg_ps: .byte 0
 
 .end
