@@ -190,32 +190,89 @@ inst_DEY:
 
 @ TAX - transfer accumulator to X
 inst_TAX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r0, [r1]                    @ r0 = accumulator
+
+    ldr     r2, =reg_x                  @ r2 = pointer to X register
+    strb    r0, [r2]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ TAY - transfer accumulator to Y
 inst_TAY:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r0, [r1]                    @ r0 = accumulator
+
+    ldr     r2, =reg_y                  @ r2 = pointer to Y register
+    strb    r0, [r2]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ TXA - transfer X to accumulator
 inst_TXA:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r0, [r1]                    @ r0 = X register
+
+    ldr     r2, =reg_a                  @ r2 = pointer to accumulator
+    strb    r0, [r2]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ TXS - transfer X to stack pointer
 inst_TXS:
-    @ TODO
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r0, [r1]                    @ r0 = X register
+
+    ldr     r2, =reg_s                  @ r2 = pointer to stack pointer
+    strb    r0, [r2]
+
+    @ no flag is set
+
     bx      lr
 
 @ TYA - transfer Y to accumulator
 inst_TYA:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r0, [r1]                    @ r0 = Y register
+
+    ldr     r2, =reg_a                  @ r2 = pointer to accumulator
+    strb    r0, [r2]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ TSX - transfer stack pointer to X
 inst_TSX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_s                  @ r1 = pointer to stack pointer
+    ldrb    r0, [r1]                    @ r0 = stack pointer
+
+    ldr     r2, =reg_x                  @ r2 = pointer to X register
+    strb    r0, [r2]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 .align
