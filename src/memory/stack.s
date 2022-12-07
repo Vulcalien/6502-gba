@@ -44,7 +44,7 @@ stack_pull_byte:
 @ input:
 @   r0 = byte to push
 stack_push_byte:
-    push    {r4, r5, lr}
+    push    {r4-r5, lr}
 
     ldr     r4, =reg_s                  @ r4 = pointer to sp
     ldrb    r5, [r4]                    @ r5 = sp value
@@ -57,7 +57,7 @@ stack_push_byte:
     sub     r5, #1
     strb    r5, [r4]
 
-    pop     {r4, r5, lr}
+    pop     {r4-r5, lr}
     bx      lr
 
 .align
@@ -100,7 +100,7 @@ stack_push_word:
     asr     r0, r4, #8
     bl      stack_push_byte
 
-    pop     {r5, lr}
+    pop     {r4, lr}
     bx      lr
 
 .end

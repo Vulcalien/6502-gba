@@ -32,7 +32,7 @@ else ifeq ($(CURRENT_OS),WINDOWS)
 	EMULATOR :=
 endif
 
-ASFLAGS  := -mcpu=arm7tdmi
+ASFLAGS  := -mcpu=arm7tdmi -Iinclude
 
 LDFLAGS := -Tlnkscript -nostartfiles
 LDLIBS  :=

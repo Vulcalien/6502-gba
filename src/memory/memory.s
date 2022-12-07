@@ -62,7 +62,7 @@ memory_write_byte:
 @ output:
 @   r0 = read word
 memory_read_word:
-    push    {r4, r5, lr}
+    push    {r4-r5, lr}
 
     mov     r4, r0                      @ r4 = addr
 
@@ -75,7 +75,7 @@ memory_read_word:
     bl      memory_read_byte
     orr     r0, r5, r0, asr #8
 
-    pop     {r4, r5, lr}
+    pop     {r4-r5, lr}
     bx      lr
 
 .align
@@ -86,7 +86,7 @@ memory_read_word:
 @   r0 = addr
 @   r1 = value
 memory_write_word:
-    push    {r4, r5, lr}
+    push    {r4-r5, lr}
 
     mov     r4, r0                      @ r4 = addr
     mov     r5, r1                      @ r5 = val
@@ -99,7 +99,7 @@ memory_write_word:
     asr     r1, r5, #8
     bl      memory_write_byte
 
-    pop     {r4, r5, lr}
+    pop     {r4-r5, lr}
     bx      lr
 
 .end

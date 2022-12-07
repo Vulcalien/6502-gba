@@ -15,6 +15,8 @@
 
 .text
 
+.include "addressing.inc"
+
 @ processor status flags
 .equ    carry_flag,        (1 << 0)
 .equ    zero_flag,         (1 << 1)
@@ -24,6 +26,90 @@
 .equ    unused_flag,       (1 << 5)
 .equ    overflow_flag,     (1 << 6)
 .equ    negative_flag,     (1 << 7)
+
+@ output:
+@   r0 = byte read
+read_byte:
+    ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
+    ldrb    r1, [r1]                    @ r1 = addressing mode
+
+    @ if addr_ACC
+    cmp     r1, #addr_ACC
+    bne     1f
+
+    ldr     r0, =reg_a
+    ldrb    r0, [r0]
+    bx      lr
+1:
+    @ TODO
+    bx lr
+
+.align
+.pool
+
+@ input:
+@   r0 = byte to write
+write_byte:
+    ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
+    ldr     r1, [r1]                    @ r1 = addressing mode
+
+    @ if addr_ACC
+    cmp     r1, #addr_ACC
+    bne     1f
+
+    ldr     r2, =reg_a
+    strb    r0, [r2]
+    bx      lr
+1:
+    @ TODO
+    bx lr
+
+.align
+.pool
+
+@ input:
+@   r0 = relative offset
+@   r1 = condition flag
+branch_if_set:
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r2, [r2]                    @ r2 = processor status
+
+    @ if conditional flag is clear, return
+    tst     r2, r1
+    bxeq    lr
+
+    @ add relative offset to program counter
+    ldr     r2, =reg_pc                 @ pointer to program counter
+    ldrh    r3, [r2]                    @ r3 = program counter
+    add     r3, r0
+    strh    r3, [r2]
+
+    bx      lr
+
+.align
+.pool
+
+@ input:
+@   r0 = relative offset
+@   r1 = condition flag
+branch_if_clear:
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r2, [r2]                    @ r2 = processor status
+
+    @ if conditional flag is set, return
+    tst     r2, r1
+    bxne    lr
+
+    @ add relative offset to program counter
+    ldr     r2, =reg_pc                 @ pointer to program counter
+    ldrh    r3, [r2]                    @ r3 = program counter
+    add     r3, r0
+    strh    r3, [r2]
+
+    bx      lr
+
+.align
+.pool
 
 @ input:
 @   r0 = value to test
@@ -113,7 +199,15 @@ inst_BIT:
 
 @ INC - increment memory
 inst_INC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    add     r0, #1
+    bl      write_byte
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ INX - increment X register
@@ -146,7 +240,15 @@ inst_INY:
 
 @ DEC - decrement memory
 inst_DEC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    sub     r0, #1
+    bl      write_byte
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ DEX - decrement X register
@@ -385,42 +487,98 @@ inst_CPY:
 
 @ BEQ - branch if equal
 inst_BEQ:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #zero_flag
+
+    bl      branch_if_set
+
+    pop     {lr}
     bx      lr
 
 @ BNE - branch if not equal
 inst_BNE:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #zero_flag
+
+    bl      branch_if_clear
+
+    pop     {lr}
     bx      lr
 
 @ BPL - branch if positive
 inst_BPL:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #negative_flag
+
+    bl      branch_if_clear
+
+    pop     {lr}
     bx      lr
 
 @ BMI - branch if minus
 inst_BMI:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #negative_flag
+
+    bl      branch_if_set
+
+    pop     {lr}
     bx      lr
 
 @ BCC - branch if carry clear
 inst_BCC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #carry_flag
+
+    bl      branch_if_clear
+
+    pop     {lr}
     bx      lr
 
 @ BCS - branch if carry set
 inst_BCS:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #carry_flag
+
+    bl      branch_if_set
+
+    pop     {lr}
     bx      lr
 
 @ BVC - branch if overflow clear
 inst_BVC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #overflow_flag
+
+    bl      branch_if_clear
+
+    pop     {lr}
     bx      lr
 
 @ BVS - branch if overflow set
 inst_BVS:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+    mov     r1, #overflow_flag
+
+    bl      branch_if_set
+
+    pop     {lr}
     bx      lr
 
 @ JMP - jump

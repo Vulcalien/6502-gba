@@ -32,10 +32,10 @@ AgbMain:
 @ output:
 @   r0 = instruction
 fetch_instruction:
-    push    {r4, r5, lr}
+    push    {r4-r5, lr}
 
-    ldr     r4, =reg_pc                 @ r4 = pointer to pc
-    ldrh    r5, [r4]                    @ r5 = pc value
+    ldr     r4, =reg_pc                 @ r4 = pointer to program counter
+    ldrh    r5, [r4]                    @ r5 = program counter
 
     mov     r0, r5
     bl      memory_read_byte            @ r0 = fetched instruction
@@ -44,7 +44,7 @@ fetch_instruction:
     add     r5, #1
     strh    r5, [r4]
 
-    pop     {r4, r5, lr}
+    pop     {r4-r5, lr}
     bx      lr
 
 .align

@@ -34,7 +34,7 @@ decode_instruction:
     add     r0, r1, r0, lsl #3          @ r0 = pointer to addressing mode code
 
     @ set addressing mode
-    ldrb    r1, [r0]                    @ r1 = addressing mode code
+    ldr     r1, [r0]                    @ r1 = addressing mode code
     ldr     r2, =addressing_mode        @ r2 = pointer to addressing_mode
     strb    r1, [r2]
 
