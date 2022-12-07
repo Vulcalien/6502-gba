@@ -15,6 +15,35 @@
 
 .text
 
+@ processor status flags
+.equ    carry_flag,        (1 << 0)
+.equ    zero_flag,         (1 << 1)
+.equ    interrupt_disable, (1 << 2)
+.equ    decimal_mode,      (1 << 3)
+.equ    break_flag,        (1 << 4)
+.equ    unused_flag,       (1 << 5)
+.equ    overflow_flag,     (1 << 6)
+.equ    negative_flag,     (1 << 7)
+
+@ input:
+@   r0 = value to test
+set_flags_z_n:
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r2, [r1]                    @ r2 = processor status
+
+    ands    r0, #0xff
+    orreq   r2, #zero_flag
+    bicne   r2, #zero_flag
+
+    tst     r0, #0x80
+    orrne   r2, #negative_flag
+    biceq   r2, #negative_flag
+
+    strb    r2, [r1]
+
+.align
+.pool
+
 @@@@@@@@@@@@@@@@@
 @   OPERATORS   @
 @@@@@@@@@@@@@@@@@
@@ -89,12 +118,30 @@ inst_INC:
 
 @ INX - increment X register
 inst_INX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r0, [r1]                    @ r0 = value of X register
+    add     r0, #1
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ INY - increment Y register
 inst_INY:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r0, [r1]                    @ r0 = value of Y register
+    add     r0, #1
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ DEC - decrement memory
@@ -104,12 +151,30 @@ inst_DEC:
 
 @ DEX - decrement X register
 inst_DEX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r0, [r1]                    @ r0 = value of X register
+    sub     r0, #1
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ DEY - decrement Y register
 inst_DEY:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r0, [r1]                    @ r0 = value of Y register
+    sub     r0, #1
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 .align
@@ -165,37 +230,65 @@ inst_TSX:
 
 @ CLC - clear carry flag
 inst_CLC:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    bic     r0, #carry_flag
+    strb    r0, [r1]
+
     bx      lr
 
 @ CLD - clear decimal mode
 inst_CLD:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    bic     r0, #decimal_mode
+    strb    r0, [r1]
+
     bx      lr
 
 @ CLI - clear interrupt disable
 inst_CLI:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    bic     r0, #interrupt_disable
+    strb    r0, [r1]
+
     bx      lr
 
 @ CLV - clear overflow flag
 inst_CLV:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    bic     r0, #overflow_flag
+    strb    r0, [r1]
+
     bx      lr
 
 @ SEC - set carry flag
 inst_SEC:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    orr     r0, #carry_flag
+    strb    r0, [r1]
+
     bx      lr
 
 @ SED - set decimal flag
 inst_SED:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    orr     r0, #decimal_mode
+    strb    r0, [r1]
+
     bx      lr
 
 @ SEI - set interrupt disable
 inst_SEI:
-    @ TODO
+    ldr     r1, =reg_status
+    ldrb    r0, [r1]
+    orr     r0, #interrupt_disable
+    strb    r0, [r1]
+
     bx      lr
 
 .align
@@ -378,7 +471,6 @@ inst_BRK:
 
 @ NOP - no operation
 inst_NOP:
-    @ TODO
     bx      lr
 
 .end
