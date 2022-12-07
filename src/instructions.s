@@ -149,17 +149,50 @@ inst_SBC:
 
 @ AND - logical AND
 inst_AND:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r2, [r1]                    @ r2 = accumulator
+    and     r0, r2
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ ORA - logical inclusive OR
 inst_ORA:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r2, [r1]                    @ r2 = accumulator
+    orr     r0, r2
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ EOR - exclusive OR
 inst_EOR:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r2, [r1]                    @ r2 = accumulator
+    eor     r0, r2
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ ASL - arithmetic shift left
@@ -184,7 +217,34 @@ inst_ROR:
 
 @ BIT - bit test
 inst_BIT:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r1, [r1]                    @ r1 = accumulator
+
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r3, [r2]                    @ r3 = processor status
+
+    @ set/clear zero flag
+    tst     r1, r0
+    orreq   r3, #zero_flag
+    bicne   r3, #zero_flag
+
+    @ set/clear overflow flag
+    tst     r0, #0x40
+    orrne   r3, #overflow_flag
+    biceq   r3, #overflow_flag
+
+    @ set/clear negative flag
+    tst     r0, #0x80
+    orrne   r3, #negative_flag
+    biceq   r3, #overflow_flag
+
+    strb    r3, [r2]
+
+    pop     {lr}
     bx      lr
 
 .align
@@ -459,19 +519,73 @@ inst_SEI:
 
 .global inst_CMP, inst_CPX, inst_CPY
 
-@ CMP - compare
+@ CMP - compare accumulator
 inst_CMP:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r1, [r1]                    @ r1 = accumulator
+
+    @ set/clear carry flag
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r3, [r2]                    @ r3 = processor status
+
+    cmp     r1, r0
+    orrge   r3, #carry_flag
+    biclt   r3, #carry_flag
+
+    sub     r0, r1, r0                  @ r0 = accumulator - byte read
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ CPX - compare X register
 inst_CPX:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r1, [r1]                    @ r1 = X register
+
+    @ set/clear carry flag
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r3, [r2]                    @ r3 = processor status
+
+    cmp     r1, r0
+    orrge   r3, #carry_flag
+    biclt   r3, #carry_flag
+
+    sub     r0, r1, r0                  @ r0 = X register - byte read
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ CPY - compare Y register
 inst_CPY:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r1, [r1]                    @ r1 = Y register
+
+    @ set/clear carry flag
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r3, [r2]                    @ r3 = processor status
+
+    cmp     r1, r0
+    orrge   r3, #carry_flag
+    biclt   r3, #carry_flag
+
+    sub     r0, r1, r0                  @ r0 = Y register - byte read
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 .align
@@ -613,32 +727,74 @@ inst_RTI:
 
 @ LDA - load accumulator
 inst_LDA:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    bl      read_byte                   @ r0 = byte read
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ LDX - load X register
 inst_LDX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    bl      read_byte                   @ r0 = byte read
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ LDY - load Y register
 inst_LDY:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    bl      read_byte                   @ r0 = byte read
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ STA - store accumulator
 inst_STA:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r0, [r1]                    @ r0 = accumulator
+    bl      write_byte
+
+    pop     {lr}
     bx      lr
 
 @ STX - store X register
 inst_STX:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
+    ldrb    r0, [r1]                    @ r0 = accumulator
+    bl      write_byte
+
+    pop     {lr}
     bx      lr
 
 @ STY - store Y register
 inst_STY:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r0, [r1]                    @ r0 = accumulator
+    bl      write_byte
+
+    pop     {lr}
     bx      lr
 
 .align
