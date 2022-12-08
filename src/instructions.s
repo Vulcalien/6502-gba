@@ -37,8 +37,8 @@ read_byte:
     cmp     r1, #addr_ACC
     bne     1f
 
-    ldr     r0, =reg_a
-    ldrb    r0, [r0]
+    ldr     r0, =reg_a                  @ r0 = pointer to accumulator
+    ldrb    r0, [r0]                    @ r0 = accumulator
     bx      lr
 1:
     @ TODO
@@ -51,13 +51,13 @@ read_byte:
 @   r0 = byte to write
 write_byte:
     ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
-    ldr     r1, [r1]                    @ r1 = addressing mode
+    ldrb    r1, [r1]                    @ r1 = addressing mode
 
     @ if addr_ACC
     cmp     r1, #addr_ACC
     bne     1f
 
-    ldr     r2, =reg_a
+    ldr     r2, =reg_a                  @ r2 = pointer to accumulator
     strb    r0, [r2]
     bx      lr
 1:
@@ -197,12 +197,56 @@ inst_EOR:
 
 @ ASL - arithmetic shift left
 inst_ASL:
-    @ TODO
+    push    {r4, lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    @ set/clear carry bit
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r2, [r1]                    @ r2 = processor status
+
+    tst     r0, #0x80
+    orrne   r2, #carry_flag
+    biceq   r2, #carry_flag
+
+    strb    r2, [r1]
+
+    @ shift left
+    lsl     r0, #1
+
+    mov     r4, r0
+    bl      write_byte
+    mov     r0, r4
+
+    bl      set_flags_z_n
+
+    pop     {r4, lr}
     bx      lr
 
 @ LSR - logical shift right
 inst_LSR:
-    @ TODO
+    push    {r4, lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    @ set/clear carry bit
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r2, [r1]                    @ r2 = processor status
+
+    tst     r0, #0x01
+    orrne   r2, #carry_flag
+    biceq   r2, #carry_flag
+
+    @ shift right
+    lsr     r0, #1
+
+    mov     r4, r0
+    bl      write_byte
+    mov     r0, r4
+
+    bl      set_flags_z_n
+
+    pop     {r4, lr}
     bx      lr
 
 @ ROL - rotate left
@@ -259,15 +303,18 @@ inst_BIT:
 
 @ INC - increment memory
 inst_INC:
-    push    {lr}
+    push    {r4, lr}
 
     bl      read_byte                   @ r0 = byte read
     add     r0, #1
+
+    mov     r4, r0
     bl      write_byte
+    mov     r0, r4
 
     bl      set_flags_z_n
 
-    pop     {lr}
+    pop     {r4, lr}
     bx      lr
 
 @ INX - increment X register
@@ -300,15 +347,18 @@ inst_INY:
 
 @ DEC - decrement memory
 inst_DEC:
-    push    {lr}
+    push    {r4, lr}
 
     bl      read_byte                   @ r0 = byte read
     sub     r0, #1
+
+    mov     r4, r0
     bl      write_byte
+    mov     r0, r4
 
     bl      set_flags_z_n
 
-    pop     {lr}
+    pop     {r4, lr}
     bx      lr
 
 @ DEX - decrement X register
