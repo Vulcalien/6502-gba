@@ -707,12 +707,34 @@ inst_JSR:
 
 @ RTS - return from subroutine
 inst_RTS:
-    @ TODO
+    push    {lr}
+
+    bl      stack_pull_word             @ r0 = pulled word
+    add     r0, #1
+
+    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
+    strh    r0, [r1]
+
+    pop     {lr}
     bx      lr
 
 @ RTI - return from interrupt
 inst_RTI:
-    @ TODO
+    push    {lr}
+
+    @ pop processor status
+    bl      stack_pull_byte             @ r0 = pulled byte
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    strb    r0, [r1]
+
+    @ pop program counter
+    bl      stack_pull_word             @ r0 = pulled word
+
+    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
+    strh    r0, [r1]
+
+    pop     {lr}
     bx      lr
 
 .align
@@ -808,22 +830,56 @@ inst_STY:
 
 @ PLA - pull accumulator
 inst_PLA:
-    @ TODO
+    push    {lr}
+
+    bl      stack_pull_byte             @ r0 = pulled byte
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    strb    r0, [r1]
+
+    bl      set_flags_z_n
+
+    pop     {lr}
     bx      lr
 
 @ PLP - pull processor status
 inst_PLP:
-    @ TODO
+    push    {lr}
+
+    bl      stack_pull_byte             @ r0 = pulled byte
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    strb    r0, [r1]
+
+    pop     {lr}
     bx      lr
 
 @ PHA - push accumulator
 inst_PHA:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r0, [r1]                    @ r0 = accumulator
+
+    bl      stack_push_byte
+
+    pop     {lr}
     bx      lr
 
 @ PHP - push processor status
 inst_PHP:
-    @ TODO
+    push    {lr}
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r0, [r1]                    @ r0 = processor status
+
+    @ set 'break flag' and 'unused flag' to 1, as they are pseudo-flags
+    @ and don't physically exist in the processor)
+    orr     r0, #(break_flag | unused_flag)
+
+    bl      stack_push_byte
+
+    pop     {lr}
     bx      lr
 
 .align
