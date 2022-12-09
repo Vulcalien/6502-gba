@@ -15,8 +15,6 @@
 
 .section .iwram, "ax"
 
-.include "addressing.inc"
-
 @ processor status flags
 .equ    carry_flag,        (1 << 0)
 .equ    zero_flag,         (1 << 1)
@@ -33,10 +31,11 @@ read_byte:
     push    {lr}
 
     ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
-    ldrb    r1, [r1]                    @ r1 = addressing mode
+    ldr     r1, [r1]                    @ r1 = addressing mode
 
     @ if addr_ACC (Accumulator)
-    cmp     r1, #addr_ACC
+    ldr     r2, =addr_ACC
+    cmp     r1, r2
     bne     1f @ else
 
     ldr     r0, =reg_a                  @ r0 = pointer to accumulator
@@ -45,15 +44,18 @@ read_byte:
 1: @ else
 
     @ if addr_IMM (Immediate) or addr_REL (Relative)
-    cmp     r1, #addr_IMM
-    cmpne   r1, #addr_REL
-    bne     2f @ else
+    ldr     r2, =addr_IMM
+    cmp     r1, r2
+    ldrne   r2, =addr_REL
+    cmpne   r1, r2
+    bne     1f @ else
 
     bl      memory_fetch_byte           @ r0 = fetched byte
     b       255f @ exit
-2: @ else
+1: @ else
 
-    @ TODO
+    bl      addressing_get_addr         @ r0 = addr
+    bl      memory_read_byte            @ r0 = byte read
 
 255: @ exit
     pop     {lr}
@@ -65,13 +67,14 @@ read_byte:
 @ input:
 @   r0 = byte to write
 write_byte:
-    push    {lr}
+    push    {r4, lr}
 
     ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
-    ldrb    r1, [r1]                    @ r1 = addressing mode
+    ldr     r1, [r1]                    @ r1 = addressing mode
 
     @ if addr_ACC (Accumulator)
-    cmp     r1, #addr_ACC
+    ldr     r2, =addr_ACC
+    cmp     r1, r2
     bne     1f @ else
 
     ldr     r2, =reg_a                  @ r2 = pointer to accumulator
@@ -79,10 +82,13 @@ write_byte:
     b       255f @ exit
 1: @ else
 
-    @ TODO
+    mov     r4, r0
+    bl      addressing_get_addr         @ r0 = addr
+    mov     r1, r4                      @ r1 = byte to write
+    bl      memory_write_byte
 
 255: @exit
-    pop     {lr}
+    pop     {r4, lr}
     bx      lr
 
 .align

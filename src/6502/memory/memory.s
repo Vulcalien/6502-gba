@@ -30,6 +30,7 @@ memory_read_byte:
     and     r0, r1
 
     @bl      emulator_read_byte
+    and     r0, #0xff
 
     pop     {lr}
     bx      lr

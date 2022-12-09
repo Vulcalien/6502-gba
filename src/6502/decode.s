@@ -16,7 +16,7 @@
 .section .iwram, "ax"
 
 @ For each instruction there are 8 bytes:
-@   4 - addressing mode code
+@   4 - addressing mode
 @   4 - 6502 instruction address
 instruction_list:
     @ TODO
@@ -31,12 +31,12 @@ decode_instruction:
     push    {lr}
 
     ldr     r1, =instruction_list       @ r1 = pointer to instruction_list
-    add     r0, r1, r0, lsl #3          @ r0 = pointer to addressing mode code
+    add     r0, r1, r0, lsl #3          @ r0 = pointer to addressing mode
 
     @ set addressing mode
-    ldr     r1, [r0]                    @ r1 = addressing mode code
-    ldr     r2, =addressing_mode        @ r2 = pointer to addressing_mode
-    strb    r1, [r2]
+    ldr     r1, [r0]                    @ r1 = addressing mode
+    ldr     r2, =addressing_mode        @ r2 = pointer to addressing mode
+    str     r1, [r2]
 
     @ get 6502 instruction address
     add     r0, #4                  @ r0 = pointer to 6502 instruction address
