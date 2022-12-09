@@ -16,7 +16,7 @@ SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 
-SRC_SUBDIRS := memory
+SRC_SUBDIRS := 6502 6502/memory
 
 ifeq ($(CURRENT_OS),UNIX)
 	CC      := arm-none-eabi-gcc
