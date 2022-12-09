@@ -30,19 +30,34 @@
 @ output:
 @   r0 = byte read
 read_byte:
+    push    {lr}
+
     ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
     ldrb    r1, [r1]                    @ r1 = addressing mode
 
-    @ if addr_ACC
+    @ if addr_ACC (Accumulator)
     cmp     r1, #addr_ACC
-    bne     1f
+    bne     1f @ else
 
     ldr     r0, =reg_a                  @ r0 = pointer to accumulator
     ldrb    r0, [r0]                    @ r0 = accumulator
-    bx      lr
-1:
+    b       255f @ exit
+1: @ else
+
+    @ if addr_IMM (Immediate) or addr_REL (Relative)
+    cmp     r1, #addr_IMM
+    cmpne   r1, #addr_REL
+    bne     2f @ else
+
+    bl      memory_fetch_byte           @ r0 = fetched byte
+    b       255f @ exit
+2: @ else
+
     @ TODO
-    bx lr
+
+255: @ exit
+    pop     {lr}
+    bx      lr
 
 .align
 .pool
@@ -50,19 +65,25 @@ read_byte:
 @ input:
 @   r0 = byte to write
 write_byte:
+    push    {lr}
+
     ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
     ldrb    r1, [r1]                    @ r1 = addressing mode
 
-    @ if addr_ACC
+    @ if addr_ACC (Accumulator)
     cmp     r1, #addr_ACC
-    bne     1f
+    bne     1f @ else
 
     ldr     r2, =reg_a                  @ r2 = pointer to accumulator
     strb    r0, [r2]
-    bx      lr
-1:
+    b       255f @ exit
+1: @ else
+
     @ TODO
-    bx lr
+
+255: @exit
+    pop     {lr}
+    bx      lr
 
 .align
 .pool
