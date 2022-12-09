@@ -24,12 +24,14 @@
 @ output:
 @   r0 = byte read
 memory_read_byte:
+    push    {lr}
+
     ldr     r1, =0xffff
     and     r0, r1
 
-    @ TODO
-    mov     r0, #0
+    @bl      emulator_read_byte
 
+    pop     {lr}
     bx      lr
 
 .align
@@ -40,14 +42,38 @@ memory_read_byte:
 @   r0 = addr
 @   r1 = value
 memory_write_byte:
+    push    {lr}
+
     ldr     r2, =0xffff
     and     r0, r2
 
-    mov     r2, #0xff
-    and     r1, r2
+    and     r1, #0xff
 
-    @ TODO
+    @bl      emulator_write_byte
 
+    pop     {lr}
+    bx      lr
+
+.align
+.pool
+
+.global memory_fetch_byte
+@ output:
+@   r0 = fetched byte
+memory_fetch_byte:
+    push    {r4-r5, lr}
+
+    ldr     r4, =reg_pc                 @ r4 = pointer to program counter
+    ldrh    r5, [r4]                    @ r5 = program counter
+
+    mov     r0, r5                      @ r0 = program counter
+    bl      memory_read_byte            @ r0 = byte read
+
+    @ increment program counter
+    add     r5, #1
+    strh    r5, [r4]
+
+    pop     {r4-r5, lr}
     bx      lr
 
 .align
@@ -60,20 +86,21 @@ memory_write_byte:
 @   r0 = addr
 @
 @ output:
-@   r0 = read word
+@   r0 = word read
 memory_read_word:
     push    {r4-r5, lr}
 
     mov     r4, r0                      @ r4 = addr
 
     @ lo byte
-    bl      memory_read_byte
-    mov     r5, r0                      @ r5 = tmp value
+    bl      memory_read_byte            @ r0 = byte read
+    mov     r5, r0                      @ r5 = lo byte
 
     @ hi byte
-    add     r0, r4, #1
-    bl      memory_read_byte
-    orr     r0, r5, r0, asr #8
+    add     r0, r4, #1                  @ r0 = addr + 1
+    bl      memory_read_byte            @ r0 = byte read
+
+    orr     r0, r5, r0, lsl #8          @ r0 = lo byte | hi byte << 8
 
     pop     {r4-r5, lr}
     bx      lr
@@ -89,17 +116,38 @@ memory_write_word:
     push    {r4-r5, lr}
 
     mov     r4, r0                      @ r4 = addr
-    mov     r5, r1                      @ r5 = val
+    mov     r5, r1                      @ r5 = value
 
     @ lo byte
     bl      memory_write_byte
 
     @ hi byte
-    mov     r0, r4
-    asr     r1, r5, #8
+    add     r0, r4, #1                  @ r0 = addr + 1
+    asr     r1, r5, #8                  @ r1 = value >> 8
     bl      memory_write_byte
 
     pop     {r4-r5, lr}
+    bx      lr
+
+.align
+.pool
+
+.global memory_fetch_word
+@ output:
+@   r0 = fetched word
+memory_fetch_word:
+    push    {r4, lr}
+
+    @ lo byte
+    bl      memory_fetch_byte           @ r0 = fetched byte
+    mov     r4, r0                      @ r4 = lo byte
+
+    @ hi byte
+    bl      memory_fetch_byte           @ r0 = fetched byte
+
+    orr     r0, r4, r0, lsl #8          @ r0 = lo byte | hi byte << 8
+
+    pop     {r4, lr}
     bx      lr
 
 .end

@@ -20,32 +20,11 @@ AgbMain:
     bl      reset
 
 1: @ infinite loop
-    bl      fetch_instruction           @ r0 = fetched instruction
+    bl      memory_fetch_byte           @ r0 = fetched instruction
     bl      decode_instruction          @ r0 = 6502 instruction address
     bl      execute_instruction
 
     b       1b
-
-.align
-.pool
-
-@ output:
-@   r0 = instruction
-fetch_instruction:
-    push    {r4-r5, lr}
-
-    ldr     r4, =reg_pc                 @ r4 = pointer to program counter
-    ldrh    r5, [r4]                    @ r5 = program counter
-
-    mov     r0, r5
-    bl      memory_read_byte            @ r0 = fetched instruction
-
-    @ increment pc
-    add     r5, #1
-    strh    r5, [r4]
-
-    pop     {r4-r5, lr}
-    bx      lr
 
 .align
 .pool
