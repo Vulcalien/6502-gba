@@ -50,7 +50,7 @@ stack_push_byte:
     ldrb    r5, [r4]                    @ r5 = sp value
 
     mov     r1, r0                      @ r1 = value
-    mov     r0, r5                      @ r0 = addr
+    add     r0, r5, #0x100              @ r0 = addr
     bl      memory_write_byte
 
     @ decrement sp
@@ -71,13 +71,13 @@ stack_push_byte:
 stack_pull_word:
     push    {r4, lr}
 
-    @ lo byte
+    @ hi byte
     bl      stack_pull_byte             @ r0 = pulled byte
     mov     r4, r0
 
-    @ hi byte
+    @ lo byte
     bl      stack_pull_byte
-    orr     r0, r4, r0, lsl #8
+    orr     r0, r4, lsl #8
 
     pop     {r4, lr}
     bx      lr

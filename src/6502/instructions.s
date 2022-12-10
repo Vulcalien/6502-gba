@@ -774,18 +774,39 @@ inst_BVS:
 
 @ JMP - jump
 inst_JMP:
-    @ TODO
+    push    {lr}
+
+    @ set program counter
+    bl      addressing_get_addr         @ r0 = addr
+    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
+    strh    r0, [r1]
+
+    pop     {lr}
     bx      lr
 
 @ JSR - jump to subroutine
 inst_JSR:
-    @ TODO
+    push    {r4, lr}
+
+    ldr     r4, =reg_pc                 @ r4 = pointer to program counter
+
+    @ push program counter
+    ldrh    r0, [r4]                    @ r0 = program counter
+    sub     r0, #1
+    bl      stack_push_word
+
+    @ set program counter
+    bl      addressing_get_addr         @ r0 = addr
+    strh    r0, [r4]
+
+    pop     {r4, lr}
     bx      lr
 
 @ RTS - return from subroutine
 inst_RTS:
     push    {lr}
 
+    @ pull program counter
     bl      stack_pull_word             @ r0 = pulled word
     add     r0, #1
 
@@ -801,6 +822,7 @@ inst_RTI:
 
     @ pop processor status
     bl      stack_pull_byte             @ r0 = pulled byte
+    orr     r0, #(break_flag | unused_flag)
 
     ldr     r1, =reg_status             @ r1 = pointer to processor status
     strb    r0, [r1]
@@ -924,6 +946,7 @@ inst_PLP:
     push    {lr}
 
     bl      stack_pull_byte             @ r0 = pulled byte
+    orr     r0, #(break_flag | unused_flag)
 
     ldr     r1, =reg_status             @ r1 = pointer to processor status
     strb    r0, [r1]
@@ -950,10 +973,7 @@ inst_PHP:
     ldr     r1, =reg_status             @ r1 = pointer to processor status
     ldrb    r0, [r1]                    @ r0 = processor status
 
-    @ set 'break flag' and 'unused flag' to 1, as they are pseudo-flags
-    @ and don't physically exist in the processor)
     orr     r0, #(break_flag | unused_flag)
-
     bl      stack_push_byte
 
     pop     {lr}
@@ -970,7 +990,34 @@ inst_PHP:
 
 @ BRK - force interrupt
 inst_BRK:
-    @ TODO
+    push    {r4-r6, lr}
+
+    @ fetch an unused byte
+    bl      memory_fetch_byte
+
+    @ push program counter
+    ldr     r6, =reg_pc                 @ r6 = pointer to program counter
+    ldrh    r0, [r6]                    @ r0 = program counter
+    bl      stack_push_word
+
+    @ push processor status
+    ldr     r4, =reg_status             @ r4 = pointer to processor status
+    ldrb    r5, [r4]                    @ r5 = processor status
+
+    mov     r0, r5                      @ r0 = processor status
+    orr     r0, #(break_flag | unused_flag)
+    bl      stack_push_byte
+
+    @ set interrupt disable
+    orr     r5, #interrupt_disable
+    strb    r5, [r4]
+
+    @ load interrupt handler vector into program counter
+    ldr     r0, =0xfffe
+    bl      memory_read_word            @ r0 = interrupt handler address
+    strh    r0, [r6]
+
+    pop     {r4-r6, lr}
     bx      lr
 
 @ NOP - no operation
