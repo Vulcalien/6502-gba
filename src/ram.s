@@ -13,34 +13,38 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+.include "devices.inc"
+
+@ Allocate 6502 RAM in BSS section @
+.bss
+ram_start_address:
+    .space ram_size
+
+@@@
+
 .section .iwram, "ax"
 
-.global cpu_run_instruction
-cpu_run_instruction:
-    push    {lr}
+.global ram_read_byte
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = byte read
+ram_read_byte:
+    ldr     r1, =ram_start_address      @ r1 = pointer to RAM start
+    ldrb    r0, [r1, r0]                @ r0 = RAM[addr]
 
-    bl      memory_fetch_byte           @ r0 = fetched instruction
-    bl      decode_instruction          @ r0 = 6502 instruction address
-    bl      execute_instruction
-
-    pop     {lr}
     bx      lr
 
 .align
 .pool
 
-.global cpu_reset
-cpu_reset:
-    push    {lr}
+.global ram_write_byte
+@ input:
+@   r0 = addr
+@   r1 = value
+ram_write_byte:
+    ldr     r2, =ram_start_address      @ r2 = pointer to RAM start
+    strb    r1, [r2, r0]                @ RAM[addr] = value
 
-    @ load reset vector into program counter
-    ldr     r0, =0xfffc
-    bl      memory_read_word            @ r0 = reset vector address
-
-    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
-    strh    r0, [r1]
-
-    pop     {lr}
     bx      lr
-
-.end

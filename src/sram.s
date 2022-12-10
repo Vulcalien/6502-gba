@@ -15,32 +15,29 @@
 
 .section .iwram, "ax"
 
-.global cpu_run_instruction
-cpu_run_instruction:
-    push    {lr}
+.equ sram_start_address, 0x0e000000
 
-    bl      memory_fetch_byte           @ r0 = fetched instruction
-    bl      decode_instruction          @ r0 = 6502 instruction address
-    bl      execute_instruction
+.global sram_read_byte
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = byte read
+sram_read_byte:
+    ldr     r1, =sram_start_address     @ r1 = pointer to SRAM start
+    ldrb    r0, [r1, r0]                @ r0 = SRAM[addr]
 
-    pop     {lr}
     bx      lr
 
 .align
 .pool
 
-.global cpu_reset
-cpu_reset:
-    push    {lr}
+.global sram_write_byte
+@ input:
+@   r0 = addr
+@   r1 = value
+sram_write_byte:
+    ldr     r2, =sram_start_address     @ r2 = pointer to SRAM start
+    strb    r1, [r2, r0]                @ SRAM[addr] = value
 
-    @ load reset vector into program counter
-    ldr     r0, =0xfffc
-    bl      memory_read_word            @ r0 = reset vector address
-
-    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
-    strh    r0, [r1]
-
-    pop     {lr}
     bx      lr
-
-.end

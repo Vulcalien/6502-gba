@@ -27,9 +27,9 @@ memory_read_byte:
     push    {lr}
 
     ldr     r1, =0xffff
-    and     r0, r1
+    and     r0, r1                      @ r0 = addr & 0xffff
 
-    @bl      emulator_read_byte
+    bl      cpu_read_byte               @ r0 = byte read
     and     r0, #0xff
 
     pop     {lr}
@@ -46,11 +46,11 @@ memory_write_byte:
     push    {lr}
 
     ldr     r2, =0xffff
-    and     r0, r2
+    and     r0, r2                      @ r0 = addr & 0xffff
 
-    and     r1, #0xff
+    and     r1, #0xff                   @ r1 = value & 0xff
 
-    @bl      emulator_write_byte
+    bl      cpu_write_byte
 
     pop     {lr}
     bx      lr

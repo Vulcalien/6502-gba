@@ -13,34 +13,17 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-.section .iwram, "ax"
+@ RAM:  00 - 0f (4 KB)
+.equ ram_start,     0x00
+.equ ram_size,      0x10
+.equ ram_end,       ram_start + ram_size
 
-.global cpu_run_instruction
-cpu_run_instruction:
-    push    {lr}
+@ SRAM: 80 - 83 (1 KB)
+.equ sram_start,    0x80
+.equ sram_size,     0x04
+.equ sram_end,      sram_start + sram_size
 
-    bl      memory_fetch_byte           @ r0 = fetched instruction
-    bl      decode_instruction          @ r0 = 6502 instruction address
-    bl      execute_instruction
-
-    pop     {lr}
-    bx      lr
-
-.align
-.pool
-
-.global cpu_reset
-cpu_reset:
-    push    {lr}
-
-    @ load reset vector into program counter
-    ldr     r0, =0xfffc
-    bl      memory_read_word            @ r0 = reset vector address
-
-    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
-    strh    r0, [r1]
-
-    pop     {lr}
-    bx      lr
-
-.end
+@ ROM:  84 - ff (31 KB)
+.equ rom_start,     0x84
+.equ rom_size,      0x7c
+.equ rom_end,       rom_start + rom_size

@@ -66,9 +66,7 @@ addr_IMM:
 addr_REL:
     b       addr_REL                    @ infinite loop (should never be called)
 
-@@@@@@@@@@@@@@@@@
-@   Zero Page   @
-@@@@@@@@@@@@@@@@@
+@@@ Zero Page @@@
 
 .global addr_ZPG, addr_ZPX, addr_ZPY
 
@@ -114,9 +112,7 @@ addr_ZPY:
 .align
 .pool
 
-@@@@@@@@@@@@@@@@
-@   Absolute   @
-@@@@@@@@@@@@@@@@
+@@@ Absolute @@@
 
 .global addr_ABS, addr_ABX, addr_ABY
 
@@ -158,9 +154,7 @@ addr_ABY:
 .align
 .pool
 
-@@@@@@@@@@@@@@@@
-@   Indirect   @
-@@@@@@@@@@@@@@@@
+@@@ Indirect @@@
 
 .global addr_IND, addr_INX, addr_INY
 

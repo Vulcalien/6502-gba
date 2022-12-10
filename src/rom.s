@@ -15,32 +15,16 @@
 
 .section .iwram, "ax"
 
-.global cpu_run_instruction
-cpu_run_instruction:
-    push    {lr}
+.equ rom_start_address, 0x0e000100
 
-    bl      memory_fetch_byte           @ r0 = fetched instruction
-    bl      decode_instruction          @ r0 = 6502 instruction address
-    bl      execute_instruction
+.global rom_read_byte
+@ input:
+@   r0 = addr
+@
+@ output:
+@   r0 = byte read
+rom_read_byte:
+    ldr     r1, =rom_start_address      @ r1 = pointer to ROM start
+    ldrb    r0, [r1, r0]                @ r0 = ROM[addr]
 
-    pop     {lr}
     bx      lr
-
-.align
-.pool
-
-.global cpu_reset
-cpu_reset:
-    push    {lr}
-
-    @ load reset vector into program counter
-    ldr     r0, =0xfffc
-    bl      memory_read_word            @ r0 = reset vector address
-
-    ldr     r1, =reg_pc                 @ r1 = pointer to program counter
-    strh    r0, [r1]
-
-    pop     {lr}
-    bx      lr
-
-.end
