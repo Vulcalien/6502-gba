@@ -13,9 +13,11 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+.include "devices.inc"
+
 .section .iwram, "ax"
 
-.equ rom_start_address, 0x0e000100
+.equ rom_start_address, 0x0e000400
 
 .global rom_read_byte
 @ input:
@@ -24,6 +26,8 @@
 @ output:
 @   r0 = byte read
 rom_read_byte:
+    sub     r0, #(rom_start << 8)
+
     ldr     r1, =rom_start_address      @ r1 = pointer to ROM start
     ldrb    r0, [r1, r0]                @ r0 = ROM[addr]
 

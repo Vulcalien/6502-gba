@@ -13,6 +13,8 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+.include "devices.inc"
+
 .section .iwram, "ax"
 
 .equ sram_start_address, 0x0e000000
@@ -24,6 +26,8 @@
 @ output:
 @   r0 = byte read
 sram_read_byte:
+    sub     r0, #(sram_start << 8)
+
     ldr     r1, =sram_start_address     @ r1 = pointer to SRAM start
     ldrb    r0, [r1, r0]                @ r0 = SRAM[addr]
 

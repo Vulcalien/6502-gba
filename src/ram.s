@@ -31,6 +31,8 @@ ram_start_address:
 @ output:
 @   r0 = byte read
 ram_read_byte:
+    sub     r0, #(ram_start << 8)
+
     ldr     r1, =ram_start_address      @ r1 = pointer to RAM start
     ldrb    r0, [r1, r0]                @ r0 = RAM[addr]
 

@@ -1,0 +1,20 @@
+* = $8000
+
+; SRAM area
+.dsb $0400, 0
+
+start:
+    jmp     start
+
+; add padding bytes to reach the vectors
+.(
+start_of_padding:
+    * = $fffa
+    .dsb (* - start_of_padding), 0
+    * = $fffa
+.)
+
+; --- VECTORS ---
+    .word   $0000                       ; nmi
+    .word   start                       ; reset
+    .word   $0000                       ; irq
