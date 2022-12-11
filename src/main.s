@@ -102,6 +102,17 @@ cpu_write_byte:
     b       255f @ exit
 1: @ else
 
+    @ if vram_start <= memory page < vram_end
+    cmp     r2, #vram_start
+    blt     1f @ else
+    cmp     r2, #vram_end
+    bge     1f @ else
+
+    bl      vram_write_byte
+
+    b       255f @ exit
+1: @ else
+
     @ if sram_start <= memory page < sram_end
     cmp     r2, #sram_start
     blt     1f @ else

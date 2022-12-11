@@ -850,8 +850,8 @@ inst_RTI:
 inst_LDA:
     push    {lr}
 
-    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
     bl      read_byte                   @ r0 = byte read
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
     strb    r0, [r1]
 
     bl      set_flags_z_n
@@ -863,8 +863,8 @@ inst_LDA:
 inst_LDX:
     push    {lr}
 
-    ldr     r1, =reg_x                  @ r1 = pointer to X register
     bl      read_byte                   @ r0 = byte read
+    ldr     r1, =reg_x                  @ r1 = pointer to X register
     strb    r0, [r1]
 
     bl      set_flags_z_n
@@ -876,8 +876,8 @@ inst_LDX:
 inst_LDY:
     push    {lr}
 
-    ldr     r1, =reg_y                  @ r1 = pointer to Y register
     bl      read_byte                   @ r0 = byte read
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
     strb    r0, [r1]
 
     bl      set_flags_z_n

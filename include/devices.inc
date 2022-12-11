@@ -18,6 +18,11 @@
 .equ ram_size,      0x10
 .equ ram_end,       ram_start + ram_size
 
+@ VRAM: 40 - 5f (8 KB)
+.equ vram_start,    0x40
+.equ vram_size,     0x20
+.equ vram_end,      vram_start + vram_size
+
 @ SRAM: 80 - 83 (1 KB)
 .equ sram_start,    0x80
 .equ sram_size,     0x04

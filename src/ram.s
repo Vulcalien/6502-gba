@@ -46,6 +46,8 @@ ram_read_byte:
 @   r0 = addr
 @   r1 = value
 ram_write_byte:
+    sub     r0, #(ram_start << 8)
+
     ldr     r2, =ram_start_address      @ r2 = pointer to RAM start
     strb    r1, [r2, r0]                @ RAM[addr] = value
 

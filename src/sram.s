@@ -41,6 +41,8 @@ sram_read_byte:
 @   r0 = addr
 @   r1 = value
 sram_write_byte:
+    sub     r0, #(sram_start << 8)
+
     ldr     r2, =sram_start_address     @ r2 = pointer to SRAM start
     strb    r1, [r2, r0]                @ SRAM[addr] = value
 

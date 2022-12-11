@@ -4,6 +4,8 @@
 .dsb $0400, 0
 
 start:
+    lda     #$8f
+    sta     $4000
     jmp     start
 
 ; add padding bytes to reach the vectors
