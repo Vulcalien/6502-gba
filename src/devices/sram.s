@@ -15,40 +15,37 @@
 
 .include "devices.inc"
 
-@ Allocate 6502 RAM in BSS section @
-.bss
-ram_start_address:
-    .space ram_size
-
-@@@
-
 .section .iwram, "ax"
 
-.global ram_read_byte
+.equ sram_start_address, 0x0e000000
+
+.global sram_read_byte
 @ input:
 @   r0 = addr
 @
 @ output:
 @   r0 = byte read
-ram_read_byte:
-    sub     r0, #(ram_start << 8)
+sram_read_byte:
+    sub     r0, #(sram_start << 8)
 
-    ldr     r1, =ram_start_address      @ r1 = pointer to RAM start
-    ldrb    r0, [r1, r0]                @ r0 = RAM[addr]
+    ldr     r1, =sram_start_address     @ r1 = pointer to SRAM start
+    ldrb    r0, [r1, r0]                @ r0 = SRAM[addr]
 
     bx      lr
 
 .align
 .pool
 
-.global ram_write_byte
+.global sram_write_byte
 @ input:
 @   r0 = addr
 @   r1 = value
-ram_write_byte:
-    sub     r0, #(ram_start << 8)
+sram_write_byte:
+    sub     r0, #(sram_start << 8)
 
-    ldr     r2, =ram_start_address      @ r2 = pointer to RAM start
-    strb    r1, [r2, r0]                @ RAM[addr] = value
+    ldr     r2, =sram_start_address     @ r2 = pointer to SRAM start
+    strb    r1, [r2, r0]                @ SRAM[addr] = value
 
     bx      lr
+
+.end

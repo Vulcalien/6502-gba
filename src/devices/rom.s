@@ -17,33 +17,20 @@
 
 .section .iwram, "ax"
 
-.equ sram_start_address, 0x0e000000
+.equ rom_start_address, 0x0e000400
 
-.global sram_read_byte
+.global rom_read_byte
 @ input:
 @   r0 = addr
 @
 @ output:
 @   r0 = byte read
-sram_read_byte:
-    sub     r0, #(sram_start << 8)
+rom_read_byte:
+    sub     r0, #(rom_start << 8)
 
-    ldr     r1, =sram_start_address     @ r1 = pointer to SRAM start
-    ldrb    r0, [r1, r0]                @ r0 = SRAM[addr]
-
-    bx      lr
-
-.align
-.pool
-
-.global sram_write_byte
-@ input:
-@   r0 = addr
-@   r1 = value
-sram_write_byte:
-    sub     r0, #(sram_start << 8)
-
-    ldr     r2, =sram_start_address     @ r2 = pointer to SRAM start
-    strb    r1, [r2, r0]                @ SRAM[addr] = value
+    ldr     r1, =rom_start_address      @ r1 = pointer to ROM start
+    ldrb    r0, [r1, r0]                @ r0 = ROM[addr]
 
     bx      lr
+
+.end

@@ -75,3 +75,5 @@ vram_write_byte:
 
 255: @ exit
     bx      lr
+
+.end

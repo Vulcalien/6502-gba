@@ -18,6 +18,11 @@
 .equ ram_size,      0x10
 .equ ram_end,       ram_start + ram_size
 
+@ I/O Registers: 10 (256 Bytes)
+.equ io_reg_start,  0x10
+.equ io_reg_size,   0x01
+.equ io_reg_end,    io_reg_start + io_reg_size
+
 @ VRAM: 40 - 5f (8 KB)
 .equ vram_start,    0x40
 .equ vram_size,     0x20

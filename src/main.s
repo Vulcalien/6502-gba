@@ -50,6 +50,17 @@ cpu_read_byte:
     b       255f @ exit
 1: @ else
 
+    @ if io_reg_start <= memory page < io_reg_end
+    cmp     r2, #io_reg_start
+    blt     1f @ else
+    cmp     r2, #io_reg_end
+    bge     1f @ else
+
+    bl      io_reg_read_byte
+
+    b       255f @ exit
+1: @ else
+
     @ if sram_start <= memory page < sram_end
     cmp     r2, #sram_start
     blt     1f @ else
@@ -98,6 +109,17 @@ cpu_write_byte:
     bge     1f @ else
 
     bl      ram_write_byte
+
+    b       255f @ exit
+1: @ else
+
+    @ if io_reg_start <= memory page < io_reg_end
+    cmp     r2, #io_reg_start
+    blt     1f @ else
+    cmp     r2, #io_reg_end
+    bge     1f @ else
+
+    bl      io_reg_write_byte
 
     b       255f @ exit
 1: @ else
