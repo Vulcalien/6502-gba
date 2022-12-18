@@ -43,9 +43,11 @@
 @   r0 = addr
 @   r1 = value
 vram_write_byte:
+    push    {lr}
+
     sub     r0, #(vram_start << 8)
 
-    @ if writing to BGs
+    @ if writing to BG Tilemaps
     cmp     r0, #0x1000
     bge     1f @ else
 
@@ -66,12 +68,51 @@ vram_write_byte:
     cmp     r0, #0x1800
     bge     1f @ else
 
-    @ TODO write to BG Tileset
+    sub     r0, #0x1000                 @ r0 = BG Tileset index
+    ldr     r2, =bg_tileset_addr        @ r2 = pointer to BG tileset start
+    add     r0, r2                      @ r0 = pointer to BG tileset[index]
+    bl      write_tileset_byte
 
     b       255f @ exit
 1: @ else
 
-    @ TODO write to OBJ Tileset
+    @ writing to OBJ Tileset
+    sub     r0, #0x1800                 @ r0 = OBJ Tileset index
+    ldr     r2, =obj_tileset_addr       @ r2 = pointer to OBJ tileset start
+    add     r0, r2                      @ r0 = pointer to OBJ tileset[index]
+    bl      write_tileset_byte
+
+255: @ exit
+    pop     {lr}
+    bx      lr
+
+.align
+.pool
+
+@ input:
+@   r0 = GBA addr
+@   r1 = value
+write_tileset_byte:
+    @ Since the GBA's VRAM does not have an 8-bit
+    @ data bus, 16-bit writes are used instead
+
+    @ if writing a lo byte
+    tst     r0, #1
+    bne     1f @ else
+
+    ldrh    r2, [r0]                    @ r2 = old value
+    and     r2, #0xff00                 @ r2 = old value & 0xff00
+    orr     r1, r2                      @ r1 = (old value & 0xff00) | value
+    strh    r1, [r0]
+
+    b       255f @ exit
+1: @ else
+
+    @ writing an hi byte
+    ldrh    r2, [r0, #-1]!              @ r2 = old value
+    and     r2, #0x00ff                 @ r2 = old value & 0x00ff
+    orr     r1, r2, r1, lsl #8          @ r1 = (value << 8) | (old value & 0xff)
+    strh    r1, [r0]
 
 255: @ exit
     bx      lr

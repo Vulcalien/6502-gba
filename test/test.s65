@@ -4,8 +4,32 @@
 .dsb $0400, 0
 
 start:
+    ; enable BG 0-3
     lda     #$0f
     sta     $1000
+
+    ; write pixels to BG tileset
+    lda     #$11
+    sta     $5000
+    sta     $5001
+    sta     $5002
+    sta     $5003
+
+    sta     $5004
+    sta     $5005
+    sta     $5006
+    sta     $5007
+
+    sta     $5008
+    sta     $5009
+    sta     $500a
+    sta     $500b
+
+    sta     $500c
+    sta     $500d
+    sta     $500e
+    sta     $500f
+
     jmp     start
 
 ; add padding bytes to reach the vectors
