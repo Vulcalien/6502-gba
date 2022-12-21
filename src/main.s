@@ -124,6 +124,17 @@ cpu_write_byte:
     b       255f @ exit
 1: @ else
 
+    @ if palette_start <= memory page < palette_end
+    cmp     r2, #palette_start
+    blt     1f @ else
+    cmp     r2, #palette_end
+    bge     1f @ else
+
+    bl      palette_write_byte
+
+    b       255f @ exit
+1: @ else
+
     @ if vram_start <= memory page < vram_end
     cmp     r2, #vram_start
     blt     1f @ else

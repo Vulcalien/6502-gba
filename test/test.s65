@@ -30,6 +30,23 @@ start:
     sta     $500e
     sta     $500f
 
+    ; write rainbow to palette RAM
+    lda     #$00
+    ldx     #$00                        ; X = color
+    ldy     #$00                        ; Y = palette index
+palette_rainbow_loop:
+    inx
+
+    iny
+    tya
+    and     #$1f
+    tay
+
+    txa
+    sta     $2000, y
+
+    jmp     palette_rainbow_loop
+
     jmp     start
 
 ; add padding bytes to reach the vectors

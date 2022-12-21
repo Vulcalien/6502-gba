@@ -23,6 +23,11 @@
 .equ io_reg_size,   0x01
 .equ io_reg_end,    io_reg_start + io_reg_size
 
+@ Palette RAM: 20 (256 Bytes)
+.equ palette_start, 0x20
+.equ palette_size,  0x01
+.equ palette_end,   palette_start + palette_size
+
 @ VRAM: 40 - 5f (8 KB)
 .equ vram_start,    0x40
 .equ vram_size,     0x20
