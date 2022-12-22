@@ -18,7 +18,7 @@
 @ Allocate 6502 RAM in BSS section @
 .bss
 ram_start_address:
-    .space ram_size
+    .space (ram_size << 8)
 
 @@@
 
