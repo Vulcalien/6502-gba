@@ -8,6 +8,13 @@ start:
     lda     #$0f
     sta     $1000
 
+    ; test BG tilemaps
+    lda     #$bf
+    sta     $4bff
+    sta     $4c01
+    sta     $4c02
+    sta     $4c03
+
     ; write pixels to BG tileset
     lda     #$11
     sta     $5000
@@ -45,7 +52,7 @@ palette_rainbow_loop:
     txa
     sta     $2000, y
 
-    jmp     palette_rainbow_loop
+    ;jmp     palette_rainbow_loop
 
     jmp     start
 

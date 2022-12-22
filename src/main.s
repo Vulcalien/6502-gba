@@ -19,11 +19,38 @@
 
 .global AgbMain
 AgbMain:
+    bl      init
     bl      cpu_reset
 
 1: @ infinite loop
     bl      cpu_run_instruction
     b       1b @ infinite loop
+
+.align
+.pool
+
+init:
+    @ BG 0 Control
+    ldr     r0, =(3 << 0 | 8 << 8)
+    ldr     r1, =0x04000008
+    strh    r0, [r1]
+
+    @ BG 1 Control
+    ldr     r0, =(2 << 0 | 9 << 8)
+    ldr     r1, =0x0400000a
+    strh    r0, [r1]
+
+    @ BG 2 Control
+    ldr     r0, =(1 << 0 | 10 << 8)
+    ldr     r1, =0x0400000c
+    strh    r0, [r1]
+
+    @ BG 3 Control
+    ldr     r0, =(0 << 0 | 11 << 8)
+    ldr     r1, =0x0400000e
+    strh    r0, [r1]
+
+    bx      lr
 
 .align
 .pool

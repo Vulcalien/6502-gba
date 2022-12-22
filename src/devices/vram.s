@@ -54,7 +54,7 @@ vram_write_byte:
     @ transform BG Tile data from emulator (1 Byte) to GBA (2 Bytes)
     and     r2, r1, #0x3f               @ data: set tile number
     bic     r1, #0x3f                   @ clear tile number bits
-    orr     r2, r1, lsl #2              @ data: set flip bits
+    orr     r2, r1, lsl #4              @ data: set flip bits
 
     @ write BG Tile data (2 Bytes)
     ldr     r3, =bg_tilemaps_addr       @ r3 = pointer to BG tilemaps start
