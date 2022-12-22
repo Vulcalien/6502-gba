@@ -64,54 +64,20 @@ init:
 cpu_read_byte:
     push    {lr}
 
-    mov     r2, r0, lsr #8              @ r2 = memory page
+    lsr     r2, r0, #8                  @ r2 = memory page
+    lsl     r2, #3                      @ r2 = memory page * 8
 
-    @ if ram_start <= memory page < ram_end
-    cmp     r2, #ram_start
-    blt     1f @ else
-    cmp     r2, #ram_end
-    bge     1f @ else
+    ldr     r3, =memory_map             @ r3 = list of read functions
+    ldr     r3, [r3, r2]                @ r3 = read function
 
-    bl      ram_read_byte
+    @ call read function, if defined
+    cmp     r3, #0
+    moveq   r0, #0xff                   @ r0 = default value
+    beq     255f @ exit
 
-    b       255f @ exit
-1: @ else
-
-    @ if io_reg_start <= memory page < io_reg_end
-    cmp     r2, #io_reg_start
-    blt     1f @ else
-    cmp     r2, #io_reg_end
-    bge     1f @ else
-
-    bl      io_reg_read_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ if sram_start <= memory page < sram_end
-    cmp     r2, #sram_start
-    blt     1f @ else
-    cmp     r2, #sram_end
-    bge     1f @ else
-
-    bl      sram_read_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ if rom_start <= memory page < rom_end
-    cmp     r2, #rom_start
-    blt     1f @ else
-    cmp     r2, #rom_end
-    bge     1f @ else
-
-    bl      rom_read_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ default
-    mov     r0, #0xff
+    ldr     lr, =1f                     @ manually set lr
+    bx      r3                          @ r0 = read byte
+1:
 
 255: @ exit
     pop     {lr}
@@ -127,62 +93,20 @@ cpu_read_byte:
 cpu_write_byte:
     push    {lr}
 
-    mov     r2, r0, lsr #8              @ r2 = memory page
+    lsr     r2, r0, #8                  @ r2 = memory page
+    lsl     r2, #3                      @ r2 = memory page * 8
 
-    @ if ram_start <= memory page < ram_end
-    cmp     r2, #ram_start
-    blt     1f @ else
-    cmp     r2, #ram_end
-    bge     1f @ else
+    ldr     r3, =memory_map             @ r3 = list of read functions
+    add     r3, #4                      @ r3 = list of write functions (+4)
+    ldr     r3, [r3, r2]                @ r3 = write function
 
-    bl      ram_write_byte
+    @ call write function, if defined
+    cmp     r3, #0
+    beq     255f @ exit
 
-    b       255f @ exit
-1: @ else
-
-    @ if io_reg_start <= memory page < io_reg_end
-    cmp     r2, #io_reg_start
-    blt     1f @ else
-    cmp     r2, #io_reg_end
-    bge     1f @ else
-
-    bl      io_reg_write_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ if palette_start <= memory page < palette_end
-    cmp     r2, #palette_start
-    blt     1f @ else
-    cmp     r2, #palette_end
-    bge     1f @ else
-
-    bl      palette_write_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ if vram_start <= memory page < vram_end
-    cmp     r2, #vram_start
-    blt     1f @ else
-    cmp     r2, #vram_end
-    bge     1f @ else
-
-    bl      vram_write_byte
-
-    b       255f @ exit
-1: @ else
-
-    @ if sram_start <= memory page < sram_end
-    cmp     r2, #sram_start
-    blt     1f @ else
-    cmp     r2, #sram_end
-    bge     1f @ else
-
-    bl      sram_write_byte
-
-    b       255f @ exit
-1: @ else
+    ldr     lr, =1f                     @ manually set lr
+    bx      r3                          @ r0 = read byte
+1:
 
 255: @ exit
     pop     {lr}

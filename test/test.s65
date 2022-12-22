@@ -8,6 +8,11 @@ start:
     lda     #$0f
     sta     $1000
 
+    ; test reading/writing to unmapped memory
+    lda     $1100
+    sta     $3000
+    sta     $8400                       ; try writing to ROM
+
     ; test BG tilemaps
     lda     #$bf
     sta     $4bff
