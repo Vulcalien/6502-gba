@@ -19,7 +19,7 @@
 
 functions:
     .word   DISPLAY_CONTROL_read, DISPLAY_CONTROL_write         @ 00
-    .word   0, 0                                                @ 01
+    .word   KEY_INPUT_read, 0                                   @ 01
     .word   0, 0                                                @ 02
     .word   0, 0                                                @ 03
     .word   0, 0                                                @ 04
@@ -360,6 +360,30 @@ DISPLAY_CONTROL_write:
 
     ldr     r1, =0x04000000             @ r1 = pointer to GBA Display Control
     strh    r0, [r1]
+
+    bx      lr
+
+.align
+.pool
+
+@@@ KEY INPUT @@@
+@   bits    meaning         value
+@
+@   0       A               (0 = Pressed, 1 = Released)
+@   1       B               (0 = Pressed, 1 = Released)
+@   2       Select          (0 = Pressed, 1 = Released)
+@   3       Start           (0 = Pressed, 1 = Released)
+@   4       D-Pad Right     (0 = Pressed, 1 = Released)
+@   5       D-Pad Left      (0 = Pressed, 1 = Released)
+@   6       D-Pad Up        (0 = Pressed, 1 = Released)
+@   7       D-Pad Down      (0 = Pressed, 1 = Released)
+
+KEY_INPUT_read:
+    ldr     r1, =0x04000130             @ r1 = pointer to GBA Key Input
+    ldrh    r1, [r1]                    @ r1 = GBA Key Input
+
+    @ transform value, by removing 'R' and 'L' buttons
+    and     r0, r1, #0xff
 
     bx      lr
 
