@@ -31,13 +31,13 @@ palette_write_byte:
 
     @ transcode color from 8-bit to 15-bit
     and     r2, r1, #0b11100000         @ r2 = R component (3-bits)
-    mov     r3, r2, lsl #7              @ r3 = R
+    mov     r3, r2, lsr #3              @ r3 = R
 
     and     r2, r1, #0b00011100         @ r2 = G component (3-bits)
     orr     r3, r2, lsl #5              @ r3 = R | G
 
     and     r2, r1, #0b00000011         @ r2 = B component (2-bits)
-    orr     r3, r2, lsl #3              @ r3 = R | G | B
+    orr     r3, r2, lsl #13             @ r3 = R | G | B
 
     @ if addr * 2 < 0x20
     cmp     r0, #0x20
