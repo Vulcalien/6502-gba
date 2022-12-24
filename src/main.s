@@ -96,8 +96,7 @@ cpu_write_byte:
     lsr     r2, r0, #8                  @ r2 = memory page
     lsl     r2, #3                      @ r2 = memory page * 8
 
-    ldr     r3, =memory_map             @ r3 = list of read functions
-    add     r3, #4                      @ r3 = list of write functions (+4)
+    ldr     r3, =(memory_map + 4)       @ r3 = list of write functions
     ldr     r3, [r3, r2]                @ r3 = write function
 
     @ call write function, if defined
