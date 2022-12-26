@@ -4,3 +4,6 @@
 
 # vim
 *.swp
+
+# 6502 binaries
+*.o65
