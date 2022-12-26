@@ -840,20 +840,23 @@ inst_JMP:
 
 @ JSR - jump to subroutine
 inst_JSR:
-    push    {r4, lr}
+    push    {r4-r5, lr}
 
-    ldr     r4, =reg_pc                 @ r4 = pointer to program counter
+    ldr     r5, =reg_pc                 @ r5 = pointer to program counter
 
-    @ push program counter
-    ldrh    r0, [r4]                    @ r0 = program counter
+    @ read new program counter
+    bl      addressing_get_addr         @ r0 = addr
+    mov     r4, r0                      @ r4 = addr
+
+    @ push old program counter
+    ldrh    r0, [r5]                    @ r0 = program counter
     sub     r0, #1
     bl      stack_push_word
 
-    @ set program counter
-    bl      addressing_get_addr         @ r0 = addr
-    strh    r0, [r4]
+    @ set new program counter
+    strh    r4, [r5]
 
-    pop     {r4, lr}
+    pop     {r4-r5, lr}
     bx      lr
 
 @ RTS - return from subroutine
