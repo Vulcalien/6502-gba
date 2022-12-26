@@ -1,0 +1,265 @@
+; /*
+;
+; Copyright 2022 Vulcalien
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;
+; */
+
+* = $8000
+
+; SRAM area
+.dsb $0400, 0
+
+; ============================================================================ ;
+
+; additional registers in Zero Page
+R0 = $00
+R1 = $01
+R2 = $02
+R3 = $03
+
+ARRAY      = $80
+ARRAY_SIZE = 16
+
+start:
+.(
+    ; enable BG 0
+    lda     #$01
+    sta     $1000
+
+    jsr     initialize_tiles
+    jsr     initialize_background
+
+    jsr     initialize_data
+    jsr     bubble_sort
+
+    jsr     refresh
+end:
+    jmp     end
+.)
+
+; set BG tile columns
+initialize_tiles:
+.(
+value  = R0
+
+    lda     #$00
+    sta     value               ; value = 0x00
+
+    ldy     #0                  ; Y = counter
+
+loop:
+    cpy     #ARRAY_SIZE
+    beq     exit
+
+    ; set offset
+    tya                         ; A = counter
+
+    asl                         ; A = counter << 1
+    asl                         ;         ... << 2
+    asl                         ;         ... << 3
+    asl                         ;         ... << 4
+    asl                         ; A = counter << 5
+
+    tax                         ; X = offset (= counter << 5)
+
+    ; get value
+    lda     value               ; A = value
+
+    sta     $5000, x
+    sta     $5001, x
+    sta     $5002, x
+    sta     $5003, x
+    sta     $5004, x
+    sta     $5005, x
+    sta     $5006, x
+    sta     $5007, x
+    sta     $5008, x
+    sta     $5009, x
+    sta     $500a, x
+    sta     $500b, x
+    sta     $500c, x
+    sta     $500d, x
+    sta     $500e, x
+    sta     $500f, x
+    sta     $5010, x
+    sta     $5011, x
+    sta     $5012, x
+    sta     $5013, x
+    sta     $5014, x
+    sta     $5015, x
+    sta     $5016, x
+    sta     $5017, x
+    sta     $5018, x
+    sta     $5019, x
+    sta     $501a, x
+    sta     $501b, x
+    sta     $501c, x
+    sta     $501d, x
+    sta     $501e, x
+    sta     $501f, x
+
+    ; increment value
+    lda     value
+    adc     #$11                ; A = value + 0x11
+    sta     value               ; value += 0x11
+
+    iny                         ; counter++
+    jmp     loop
+
+exit:
+    rts
+.)
+
+
+
+; Initialize data array in RAM
+initialize_data:
+.(
+    lda     #$82                ; A = value
+    ldx     #0                  ; X = counter
+loop:
+    cpx     #ARRAY_SIZE
+    beq     exit
+
+    ; generate another value
+    ror
+    ror
+    ror
+    ror
+    ror
+    ror
+
+    sta     ARRAY, x            ; array[counter] = value
+
+    inx                         ; counter++
+    jmp     loop
+exit:
+    rts
+.)
+
+
+
+; Initialize background
+initialize_background:
+.(
+    ldx     #0                  ; X = counter
+loop:
+    cpx     #ARRAY_SIZE
+    beq     exit
+
+    ; TODO draw all column
+    txa                         ; A = counter
+    sta     $4000, x
+
+    inx                         ; counter++
+    jmp     loop
+exit:
+    rts
+.)
+
+
+
+; Refresh palette
+refresh:
+.(
+    ldx     #0                  ; X = counter
+loop:
+    cpx     #ARRAY_SIZE
+    beq     exit
+
+    lda     ARRAY, x            ; A = ARRAY[counter]
+    sta     $2000, x            ; palette[counter] = ARRAY[counter]
+
+    inx                         ; counter++
+    jmp     loop
+exit:
+    rts
+.)
+
+; ============================================================================ ;
+
+; === BUBBLE SORT === ;
+bubble_sort:
+.(
+temp = R0
+
+    ldy     #0                  ; Y = outer counter
+outer_loop:
+    cpy     #(ARRAY_SIZE - 1)
+    beq     exit_outer
+
+    ldx     #0                  ; X = inner counter (= j)
+inner_loop:
+    cpx     #(ARRAY_SIZE - 1)
+    beq     exit_inner
+
+    lda     ARRAY + 1, x        ; A = ARRAY[j + 1]
+
+    ; if ARRAY[j + 1] < ARRAY[j] then swap
+    cmp     ARRAY, x
+    bcs     do_not_swap
+
+    ; swap
+    sta     temp                ; temp = ARRAY[j + 1]
+    lda     ARRAY, x            ; A = ARRAY[j]
+    sta     ARRAY + 1, x        ; ARRAY[j + 1] = ARRAY[j]
+    lda     temp                ; A = temp
+    sta     ARRAY, x            ; ARRAY[j] = temp
+
+    ; push X
+    txa
+    pha
+
+    ; push Y
+    tya
+    pha
+
+    jsr     refresh
+
+    ; pull Y
+    pla
+    tay
+
+    ; pull X
+    pla
+    tax
+do_not_swap:
+
+    inx                         ; inner counter++
+    jmp     inner_loop
+exit_inner:
+
+    iny                         ; outer counter++
+    jmp     outer_loop
+exit_outer:
+
+    rts
+.)
+
+; ============================================================================ ;
+
+; add padding bytes to reach the vectors
+.(
+start_of_padding:
+    * = $fffa
+    .dsb (* - start_of_padding), 0
+    * = $fffa
+.)
+
+; --- VECTORS ---
+    .word   $0000                       ; nmi
+    .word   start                       ; reset
+    .word   $0000                       ; irq
