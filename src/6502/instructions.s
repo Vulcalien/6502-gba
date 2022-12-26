@@ -667,6 +667,8 @@ inst_CMP:
     orrge   r3, #carry_flag
     biclt   r3, #carry_flag
 
+    strh    r3, [r2]
+
     sub     r0, r1, r0                  @ r0 = accumulator - byte read
     bl      set_flags_z_n
 
@@ -690,6 +692,8 @@ inst_CPX:
     orrge   r3, #carry_flag
     biclt   r3, #carry_flag
 
+    strh    r3, [r2]
+
     sub     r0, r1, r0                  @ r0 = X register - byte read
     bl      set_flags_z_n
 
@@ -712,6 +716,8 @@ inst_CPY:
     cmp     r1, r0
     orrge   r3, #carry_flag
     biclt   r3, #carry_flag
+
+    strh    r3, [r2]
 
     sub     r0, r1, r0                  @ r0 = Y register - byte read
     bl      set_flags_z_n
