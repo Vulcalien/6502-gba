@@ -278,12 +278,66 @@ inst_LSR:
 
 @ ROL - rotate left
 inst_ROL:
-    @ TODO
+    push    {r4, lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r2, [r1]                    @ r2 = processor status
+
+    lsl     r4, r0, #1                  @ r4 = byte read << 1
+
+    @ move carry flag to bit 0
+    tst     r2, #carry_flag
+    orrne   r4, #0x01
+    biceq   r4, #0x01
+
+    @ move old bit 7 to carry flag
+    tst     r0, #0x80
+    orrne   r2, #carry_flag
+    biceq   r2, #carry_flag
+
+    strb    r2, [r1]
+
+    mov     r0, r4                      @ r0 = new value
+    bl      set_flags_z_n
+
+    mov     r0, r4                      @ r0 = new value
+    bl      write_byte
+
+    pop     {r4, lr}
     bx      lr
 
 @ ROR - rotate right
 inst_ROR:
-    @ TODO
+    push    {r4, lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldrb    r2, [r1]                    @ r2 = processor status
+
+    lsr     r4, r0, #1                  @ r4 = byte read >> 1
+
+    @ move carry flag to bit 7
+    tst     r2, #carry_flag
+    orrne   r4, #0x80
+    biceq   r4, #0x80
+
+    @ move old bit 0 to carry flag
+    tst     r0, #0x01
+    orrne   r2, #carry_flag
+    biceq   r2, #carry_flag
+
+    strb    r2, [r1]
+
+    mov     r0, r4                      @ r0 = new value
+    bl      set_flags_z_n
+
+    mov     r0, r4                      @ r0 = new value
+    bl      write_byte
+
+    pop     {r4, lr}
     bx      lr
 
 @ BIT - bit test
@@ -333,12 +387,12 @@ inst_INC:
     push    {r4, lr}
 
     bl      read_byte                   @ r0 = byte read
-    add     r0, #1
+    add     r4, r0, #1                  @ r4 = byte read + 1
 
-    mov     r4, r0
+    mov     r0, r4                      @ r0 = byte read + 1
     bl      write_byte
-    mov     r0, r4
 
+    mov     r0, r4                      @ r0 = byte read + 1
     bl      set_flags_z_n
 
     pop     {r4, lr}
@@ -377,12 +431,12 @@ inst_DEC:
     push    {r4, lr}
 
     bl      read_byte                   @ r0 = byte read
-    sub     r0, #1
+    sub     r4, r0, #1                  @ r4 = byte read - 1
 
-    mov     r4, r0
+    mov     r0, r4                      @ r0 = byte read - 1
     bl      write_byte
-    mov     r0, r4
 
+    mov     r0, r4                      @ r0 = byte read - 1
     bl      set_flags_z_n
 
     pop     {r4, lr}
