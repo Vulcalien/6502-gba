@@ -19,7 +19,7 @@
 
 functions:
     .word   DISPLAY_CONTROL_read, DISPLAY_CONTROL_write         @ 00
-    .word   KEY_INPUT_read, 0                                   @ 01
+    .word   VCOUNT_read, VCOUNT_write                           @ 01
     .word   0, 0                                                @ 02
     .word   0, 0                                                @ 03
     .word   0, 0                                                @ 04
@@ -34,7 +34,7 @@ functions:
     .word   0, 0                                                @ 0d
     .word   0, 0                                                @ 0e
     .word   0, 0                                                @ 0f
-    .word   0, 0                                                @ 10
+    .word   KEY_INPUT_read, 0                                   @ 10
     .word   0, 0                                                @ 11
     .word   0, 0                                                @ 12
     .word   0, 0                                                @ 13
@@ -360,6 +360,37 @@ DISPLAY_CONTROL_write:
 
     ldr     r1, =0x04000000             @ r1 = pointer to GBA Display Control
     strh    r0, [r1]
+
+    bx      lr
+
+.align
+.pool
+
+@@@ VCOUNT @@@
+@
+@ Read:  get the current VCOUNT value
+@ Write: wait until VCOUNT reaches the given value
+
+VCOUNT_read:
+    ldr     r1, =0x04000006             @ r1 = pointer to GBA VCOUNT
+    ldrh    r1, [r1]                    @ r1 = GBA VCOUNT (16 bits)
+
+    and     r0, r1, #0xff
+
+    bx      lr
+
+.align
+.pool
+
+VCOUNT_write:
+    @ This is a busy-wait implementation
+    ldr     r1, =0x04000006             @ r1 = pointer to GBA VCOUNT
+
+1: @ loop
+    ldrh    r2, [r1]                    @ r2 = GBA VCOUNT (16 bits)
+
+    cmp     r2, r0
+    bne     1b @ loop
 
     bx      lr
 
