@@ -43,7 +43,8 @@ start:
     jsr     initialize_background
 
     jsr     initialize_data
-    jsr     bubble_sort
+    ;jsr     bubble_sort
+    jsr     selection_sort
 
     jsr     refresh
 end:
@@ -172,9 +173,34 @@ exit:
 
 
 
+; Wait for V-Blank 5 times as a delay
+wait_5_vblanks:
+.(
+    lda     #$a4
+    sta     $1001
+
+    lda     #$a3
+    sta     $1001
+
+    lda     #$a2
+    sta     $1001
+
+    lda     #$a1
+    sta     $1001
+
+    lda     #$a0
+    sta     $1001
+
+    rts
+.)
+
+
+
 ; Refresh palette
 refresh:
 .(
+    jsr     wait_5_vblanks
+
     ldx     #0                  ; X = counter
 loop:
     cpx     #ARRAY_SIZE
@@ -241,6 +267,73 @@ do_not_swap:
     inx                         ; inner counter++
     jmp     inner_loop
 exit_inner:
+
+    iny                         ; outer counter++
+    jmp     outer_loop
+exit_outer:
+
+    rts
+.)
+
+; ============================================================================ ;
+
+; === SELECTION SORT === ;
+selection_sort:
+.(
+min = R0
+min_index = R1
+
+    ldy     #0                  ; Y = outer counter (= i)
+outer_loop:
+    cpy     #(ARRAY_SIZE - 1)
+    beq     exit_outer
+
+    ; set ARRAY[i] as minimum
+    lda     ARRAY, y            ; A = ARRAY[i]
+    sta     min                 ; min = ARRAY[i]
+
+    sty     min_index           ; min_index = i
+
+    ; inner counter = outer counter (A = Y then X = A)
+    tya
+    tax                         ; X = inner counter (= j)
+inner_loop:
+    cpx     #ARRAY_SIZE
+    beq     exit_inner
+
+    lda     min                 ; A = min
+
+    ; if ARRAY[j] < min then min = ARRAY[j]
+    cmp     ARRAY, x
+    bcc     do_not_change_min
+
+    ; change min
+    lda     ARRAY, x            ; A = ARRAY[j]
+    sta     min                 ; min = ARRAY[j]
+
+    stx     min_index           ; min_index = j
+do_not_change_min:
+
+    inx                         ; inner counter++
+    jmp     inner_loop
+exit_inner:
+
+    ; swap ARRAY[i] and min
+    lda     ARRAY, y            ; A = ARRAY[i]
+    ldx     min_index           ; X = min_index
+    sta     ARRAY, x            ; ARRAY[min_index] = ARRAY[i]
+    lda     min                 ; A = min
+    sta     ARRAY, y            ; ARRAY[i] = min
+
+    ; push Y
+    tya
+    pha
+
+    jsr     refresh
+
+    ; pull Y
+    pla
+    tay
 
     iny                         ; outer counter++
     jmp     outer_loop
