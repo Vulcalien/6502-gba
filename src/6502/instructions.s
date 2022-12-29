@@ -15,6 +15,20 @@
 
 .section .iwram, "ax"
 
+@ NOTE on BCD (Binary Coded Decimal)
+@   The original 6502 can operate using the BCD arithmetic mode.
+@
+@   Since it is difficult to implement accurately and accuracy is not
+@   the main focus of this project, BCD mode will not be implemented.
+@
+@   This means that the logical state of the 'decimal_mode' flag does
+@   not affect the result of ADC and SBC instructions, that will always
+@   operate as if it were 'clear'.
+@
+@
+@   In some versions of the 6502, like the one found in the NES console,
+@   BCD is ignored similarly.
+
 @ processor status flags
 .equ    carry_flag,        (1 << 0)
 .equ    zero_flag,         (1 << 1)
@@ -154,6 +168,49 @@ set_flags_z_n:
 
     strb    r2, [r1]
 
+    bx      lr
+.align
+.pool
+
+@ NOTE: read 'NOTE on BCD'
+@
+@ input:
+@   r0 = addend
+add_to_accumulator:
+    ldr     r1, =reg_a                  @ r1 = pointer to accumulator
+    ldrb    r2, [r1]                    @ r2 = accumulator
+
+    @ let the ARM processor set the flags
+    lsl     r2, #24                     @ r2 = accumulator << 24
+    lsl     r0, #24                     @ r0 = addend << 24
+    adds    r0, r2                      @ r0 = (addend + accumulator) << 24
+
+    ldr     r2, =reg_status             @ r2 = pointer to processor status
+    ldrb    r3, [r2]                    @ r3 = processor status
+
+    @ set/clear carry flag
+    orrcs   r3, #carry_flag
+    biccc   r3, #carry_flag
+
+    @ set/clear overflow flag
+    orrvs   r3, #overflow_flag
+    bicvc   r3, #overflow_flag
+
+    @ set/clear zero flag
+    orreq   r3, #zero_flag
+    bicne   r3, #zero_flag
+
+    @ set/clear negative flag
+    orrmi   r3, #negative_flag
+    bicpl   r3, #negative_flag
+
+    strb    r3, [r2]
+
+    lsr     r0, #24                     @ r0 = (addend + accumulator) & 0xff
+    strb    r0, [r1]
+
+    bx      lr
+
 .align
 .pool
 
@@ -166,12 +223,42 @@ set_flags_z_n:
 
 @ ADC - add with carry
 inst_ADC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldr     r2, [r1]                    @ r2 = processor status
+
+    @ add carry if set
+    tst     r2, #carry_flag
+    addne   r0, #1                      @ r0 = byte read + carry flag
+
+    bl      add_to_accumulator
+
+    pop     {lr}
     bx      lr
 
 @ SBC - subtract with carry
 inst_SBC:
-    @ TODO
+    push    {lr}
+
+    bl      read_byte                   @ r0 = byte read
+
+    ldr     r1, =reg_status             @ r1 = pointer to processor status
+    ldr     r2, [r1]                    @ r2 = processor status
+
+    @ calculate two's complement of the byte read
+    mvn     r0, r0
+    add     r0, #1                      @ r0 = -(byte read)
+
+    @ subtract carry if clear
+    tst     r2, #carry_flag
+    subeq   r0, #1                      @ r0 = byte read + carry flag
+
+    bl      add_to_accumulator
+
+    pop     {lr}
     bx      lr
 
 @ AND - logical AND
