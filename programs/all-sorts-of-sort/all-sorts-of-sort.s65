@@ -31,7 +31,7 @@ R2 = $02
 R3 = $03
 
 ARRAY      = $80
-ARRAY_SIZE = 16
+ARRAY_SIZE = 15
 
 start:
 .(
@@ -51,13 +51,89 @@ end:
     jmp     end
 .)
 
+set_first_group_tile:
+.(
+    sta     $5020, x
+    sta     $5021, x
+    sta     $5022, x
+    sta     $5023, x
+    sta     $5024, x
+    sta     $5025, x
+    sta     $5026, x
+    sta     $5027, x
+    sta     $5028, x
+    sta     $5029, x
+    sta     $502a, x
+    sta     $502b, x
+    sta     $502c, x
+    sta     $502d, x
+    sta     $502e, x
+    sta     $502f, x
+    sta     $5030, x
+    sta     $5031, x
+    sta     $5032, x
+    sta     $5033, x
+    sta     $5034, x
+    sta     $5035, x
+    sta     $5036, x
+    sta     $5037, x
+    sta     $5038, x
+    sta     $5039, x
+    sta     $503a, x
+    sta     $503b, x
+    sta     $503c, x
+    sta     $503d, x
+    sta     $503e, x
+    sta     $503f, x
+
+    rts
+.)
+
+set_second_group_tile:
+.(
+    sta     $5120, x
+    sta     $5121, x
+    sta     $5122, x
+    sta     $5123, x
+    sta     $5124, x
+    sta     $5125, x
+    sta     $5126, x
+    sta     $5127, x
+    sta     $5128, x
+    sta     $5129, x
+    sta     $512a, x
+    sta     $512b, x
+    sta     $512c, x
+    sta     $512d, x
+    sta     $512e, x
+    sta     $512f, x
+    sta     $5130, x
+    sta     $5131, x
+    sta     $5132, x
+    sta     $5133, x
+    sta     $5134, x
+    sta     $5135, x
+    sta     $5136, x
+    sta     $5137, x
+    sta     $5138, x
+    sta     $5139, x
+    sta     $513a, x
+    sta     $513b, x
+    sta     $513c, x
+    sta     $513d, x
+    sta     $513e, x
+    sta     $513f, x
+
+    rts
+.)
+
 ; set BG tile columns
 initialize_tiles:
 .(
 value  = R0
 
-    lda     #$00
-    sta     value               ; value = 0x00
+    lda     #$11
+    sta     value               ; value = 0x11
 
     ldy     #0                  ; Y = counter
 
@@ -79,41 +155,22 @@ loop:
     ; get value
     lda     value               ; A = value
 
-    sta     $5000, x
-    sta     $5001, x
-    sta     $5002, x
-    sta     $5003, x
-    sta     $5004, x
-    sta     $5005, x
-    sta     $5006, x
-    sta     $5007, x
-    sta     $5008, x
-    sta     $5009, x
-    sta     $500a, x
-    sta     $500b, x
-    sta     $500c, x
-    sta     $500d, x
-    sta     $500e, x
-    sta     $500f, x
-    sta     $5010, x
-    sta     $5011, x
-    sta     $5012, x
-    sta     $5013, x
-    sta     $5014, x
-    sta     $5015, x
-    sta     $5016, x
-    sta     $5017, x
-    sta     $5018, x
-    sta     $5019, x
-    sta     $501a, x
-    sta     $501b, x
-    sta     $501c, x
-    sta     $501d, x
-    sta     $501e, x
-    sta     $501f, x
+    ; counter:
+    ;   [0, 7]  -> first  group
+    ;   [7, 15] -> second group
+    cpy     #8
+    bcs     second_group
+
+    jsr     set_first_group_tile
+    jmp     end_second_group
+
+second_group:
+    jsr     set_second_group_tile
+end_second_group
 
     ; increment value
     lda     value
+    clc
     adc     #$11                ; A = value + 0x11
     sta     value               ; value += 0x11
 
@@ -158,14 +215,23 @@ initialize_background:
 .(
     ldx     #0                  ; X = counter
 loop:
-    cpx     #ARRAY_SIZE
+    cpx     #(ARRAY_SIZE * 2)
     beq     exit
 
-    ; TODO draw all column
     txa                         ; A = counter
-    sta     $4000, x
+    lsr                         ; A = counter // 2
+    clc
+    adc     #1                  ; A = counter // 2 + 1
 
-    inx                         ; counter++
+    sta     $4000, x
+    sta     $4001, x
+    sta     $4020, x
+    sta     $4021, x
+
+    ; counter += 2
+    inx
+    inx
+
     jmp     loop
 exit:
     rts
@@ -207,7 +273,7 @@ loop:
     beq     exit
 
     lda     ARRAY, x            ; A = ARRAY[counter]
-    sta     $2000, x            ; palette[counter] = ARRAY[counter]
+    sta     $2001, x            ; palette[counter] = ARRAY[counter]
 
     inx                         ; counter++
     jmp     loop
