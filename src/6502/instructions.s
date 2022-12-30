@@ -158,6 +158,10 @@ branch_if_set:
     tst     r2, r1
     bxeq    lr
 
+    @ transform relative offset from signed 8-bit to signed 32-bit
+    lsl     r0, #24
+    asr     r0, #24
+
     @ add relative offset to program counter
     ldr     r2, =reg_pc                 @ pointer to program counter
     ldrh    r3, [r2]                    @ r3 = program counter
@@ -179,6 +183,10 @@ branch_if_clear:
     @ if conditional flag is set, return
     tst     r2, r1
     bxne    lr
+
+    @ transform relative offset from signed 8-bit to signed 32-bit
+    lsl     r0, #24
+    asr     r0, #24
 
     @ add relative offset to program counter
     ldr     r2, =reg_pc                 @ pointer to program counter
