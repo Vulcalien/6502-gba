@@ -42,14 +42,23 @@ start:
     jsr     initialize_tiles
     jsr     initialize_background
 
+loop:
     jsr     initialize_data
-    ;jsr     bubble_sort
-    jsr     insertion_sort
-    ;jsr     selection_sort
+    jsr     wait_key_press
+    jsr     bubble_sort
+    jsr     wait_key_press
 
-    jsr     refresh_save_x_y
-end:
-    jmp     end
+    jsr     initialize_data
+    jsr     wait_key_press
+    jsr     insertion_sort
+    jsr     wait_key_press
+
+    jsr     initialize_data
+    jsr     wait_key_press
+    jsr     selection_sort
+    jsr     wait_key_press
+
+    jmp     loop
 .)
 
 set_first_group_tile:
@@ -182,34 +191,57 @@ exit:
     rts
 .)
 
-
-
 ; Initialize data array in RAM
 initialize_data:
 .(
-    lda     #$82                ; A = value
-    ldx     #0                  ; X = counter
-loop:
-    cpx     #ARRAY_SIZE
-    beq     exit
+    lda     #%00000001
+    sta     ARRAY + 14
 
-    ; generate another value
-    ror
-    ror
-    ror
-    ror
-    ror
-    ror
+    lda     #%00000000
+    sta     ARRAY + 13
 
-    sta     ARRAY, x            ; array[counter] = value
+    lda     #%00000100
+    sta     ARRAY + 12
 
-    inx                         ; counter++
-    jmp     loop
-exit:
+    lda     #%00000011
+    sta     ARRAY + 11
+
+    lda     #%01100000
+    sta     ARRAY + 10
+
+    lda     #%10100000
+    sta     ARRAY + 9
+
+    lda     #%11100011
+    sta     ARRAY + 8
+
+    lda     #%00011100
+    sta     ARRAY + 7
+
+    lda     #%00011111
+    sta     ARRAY + 6
+
+    lda     #%00100000
+    sta     ARRAY + 5
+
+    lda     #%00000010
+    sta     ARRAY + 4
+
+    lda     #%11111100
+    sta     ARRAY + 3
+
+    lda     #%11100000
+    sta     ARRAY + 2
+
+    lda     #%00010100
+    sta     ARRAY + 0
+
+    lda     #%00001100
+    sta     ARRAY + 1
+
+    jsr     refresh_save_x_y
     rts
 .)
-
-
 
 ; Initialize background
 initialize_background:
@@ -229,6 +261,41 @@ loop:
     sta     $4020, x
     sta     $4021, x
 
+    sta     $4040, x
+    sta     $4041, x
+    sta     $4060, x
+    sta     $4061, x
+
+    sta     $4080, x
+    sta     $4081, x
+    sta     $40a0, x
+    sta     $40a1, x
+
+    sta     $40c0, x
+    sta     $40c1, x
+    sta     $40e0, x
+    sta     $40e1, x
+
+    sta     $4100, x
+    sta     $4101, x
+    sta     $4120, x
+    sta     $4121, x
+
+    sta     $4140, x
+    sta     $4141, x
+    sta     $4160, x
+    sta     $4161, x
+
+    sta     $4180, x
+    sta     $4181, x
+    sta     $41a0, x
+    sta     $41a1, x
+
+    sta     $41c0, x
+    sta     $41c1, x
+    sta     $41e0, x
+    sta     $41e1, x
+
     ; counter += 2
     inx
     inx
@@ -237,8 +304,6 @@ loop:
 exit:
     rts
 .)
-
-
 
 ; Wait for V-Blank 5 times as a delay
 wait_5_vblanks:
@@ -261,7 +326,16 @@ wait_5_vblanks:
     rts
 .)
 
+; Wait for a key to be pressed
+wait_key_press:
+.(
+loop:
+    lda     $1010
+    cmp     #$ff
+    beq     loop
 
+    rts
+.)
 
 ; Refresh palette
 ; The values of X and Y registers are preserved
