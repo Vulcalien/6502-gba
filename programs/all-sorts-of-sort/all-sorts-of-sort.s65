@@ -44,9 +44,10 @@ start:
 
     jsr     initialize_data
     ;jsr     bubble_sort
-    jsr     selection_sort
+    jsr     insertion_sort
+    ;jsr     selection_sort
 
-    jsr     refresh
+    jsr     refresh_save_x_y
 end:
     jmp     end
 .)
@@ -263,8 +264,17 @@ wait_5_vblanks:
 
 
 ; Refresh palette
-refresh:
+; The values of X and Y registers are preserved
+refresh_save_x_y:
 .(
+    ; push X
+    txa
+    pha
+
+    ; push Y
+    tya
+    pha
+
     jsr     wait_5_vblanks
 
     ldx     #0                  ; X = counter
@@ -278,6 +288,15 @@ loop:
     inx                         ; counter++
     jmp     loop
 exit:
+
+    ; pull Y
+    pla
+    tay
+
+    ; pull X
+    pla
+    tax
+
     rts
 .)
 
@@ -288,13 +307,15 @@ bubble_sort:
 .(
 temp = R0
 
-    ldy     #0                  ; Y = outer counter
+    ldy     #0                  ; Y = outer counter (= i)
 outer_loop:
+    ; while i != ARRAY_SIZE - 1
     cpy     #(ARRAY_SIZE - 1)
     beq     exit_outer
 
     ldx     #0                  ; X = inner counter (= j)
 inner_loop:
+    ; while j != ARRAY_SIZE - 1
     cpx     #(ARRAY_SIZE - 1)
     beq     exit_inner
 
@@ -311,28 +332,63 @@ inner_loop:
     lda     temp                ; A = temp
     sta     ARRAY, x            ; ARRAY[j] = temp
 
-    ; push X
-    txa
-    pha
-
-    ; push Y
-    tya
-    pha
-
-    jsr     refresh
-
-    ; pull Y
-    pla
-    tay
-
-    ; pull X
-    pla
-    tax
+    jsr     refresh_save_x_y
 do_not_swap:
 
     inx                         ; inner counter++
     jmp     inner_loop
 exit_inner:
+
+    iny                         ; outer counter++
+    jmp     outer_loop
+exit_outer:
+
+    rts
+.)
+
+; ============================================================================ ;
+
+; === INSERTION SORT === ;
+insertion_sort:
+.(
+value = R0
+
+    ldy     #1                  ; Y = outer counter (= i)
+outer_loop:
+    ; while i != ARRAY_SIZE
+    cpy     #ARRAY_SIZE
+    beq     exit_outer
+
+    lda     ARRAY, y            ; A = ARRAY[i]
+    sta     value               ; value = ARRAY[i]
+
+    ; inner counter = outer counter (A = Y then X = A)
+    tya
+    tax                         ; X = inner counter (= j)
+    dex                         ; j = i - 1
+inner_loop:
+    ; while j >= 0 ...
+    cpx     #0
+    bmi     exit_inner
+
+    ; ... && value < ARRAY[j]
+    lda     value               ; A = value
+    cmp     ARRAY, x
+    bcs     exit_inner
+
+    lda     ARRAY, x            ; A = ARRAY[j]
+    sta     ARRAY + 1, x        ; ARRAY[j + 1] = ARRAY[j]
+
+    jsr     refresh_save_x_y
+
+    dex                         ; inner counter--
+    jmp     inner_loop
+exit_inner:
+
+    lda     value               ; A = value
+    sta     ARRAY + 1, x        ; ARRAY[j + 1] = value
+
+    jsr     refresh_save_x_y
 
     iny                         ; outer counter++
     jmp     outer_loop
@@ -391,15 +447,7 @@ exit_inner:
     lda     min                 ; A = min
     sta     ARRAY, y            ; ARRAY[i] = min
 
-    ; push Y
-    tya
-    pha
-
-    jsr     refresh
-
-    ; pull Y
-    pla
-    tay
+    jsr     refresh_save_x_y
 
     iny                         ; outer counter++
     jmp     outer_loop
