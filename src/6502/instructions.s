@@ -13,8 +13,6 @@
 @ You should have received a copy of the GNU General Public License
 @ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-.section .iwram, "ax"
-
 @ NOTE on BCD (Binary Coded Decimal)
 @   The original 6502 can operate using the BCD arithmetic mode.
 @
@@ -38,6 +36,12 @@
 .equ    unused_flag,       (1 << 5)
 .equ    overflow_flag,     (1 << 6)
 .equ    negative_flag,     (1 << 7)
+
+.bss
+previous_addr:
+    .space 2
+
+.section .iwram, "ax"
 
 @ output:
 @   r0 = byte read
@@ -79,29 +83,64 @@ read_byte:
 .pool
 
 @ input:
-@   r0 = byte to write
-write_byte:
-    push    {r4, lr}
+@   r0 = reuse previous addr flag
+@
+@ output:
+@   r0 = addr
+get_write_addr:
+    push    {lr}
 
-    ldr     r1, =addressing_mode        @ r1 = pointer to addressing mode
-    ldr     r1, [r1]                    @ r1 = addressing mode
+    cmp     r0, #0
+    beq     1f @ else
 
-    @ if addr_ACC (Accumulator)
-    ldr     r2, =addr_ACC
-    cmp     r1, r2
-    bne     1f @ else
+    ldr     r1, =previous_addr          @ r1 = pointer to previous addr
+    ldrh    r0, [r1]                    @ r0 = previous addr
 
-    ldr     r2, =reg_a                  @ r2 = pointer to accumulator
-    strb    r0, [r2]
     b       255f @ exit
 1: @ else
 
-    mov     r4, r0
     bl      addressing_get_addr         @ r0 = addr
+
+    @ store addr in previous address
+    ldr     r1, =previous_addr
+    strh    r0, [r1]
+
+255: @ exit
+    pop     {lr}
+    bx      lr
+
+.align
+.pool
+
+@ input:
+@   r0 = byte to write
+@   r1 = reuse previous addr flag
+write_byte:
+    push    {r4, lr}
+
+    ldr     r2, =addressing_mode        @ r2 = pointer to addressing mode
+    ldr     r2, [r2]                    @ r2 = addressing mode
+
+    @ if addr_ACC (Accumulator)
+    ldr     r3, =addr_ACC
+    cmp     r2, r3
+    bne     1f @ else
+
+    ldr     r3, =reg_a                  @ r3 = pointer to accumulator
+    strb    r0, [r3]
+
+    b       255f @ exit
+1: @ else
+
+    mov     r4, r0                      @ r4 = byte to write
+
+    mov     r0, r1                      @ r0 = reuse previous addr flag
+    bl      get_write_addr              @ r0 = addr
+
     mov     r1, r4                      @ r1 = byte to write
     bl      memory_write_byte
 
-255: @exit
+255: @ exit
     pop     {r4, lr}
     bx      lr
 
@@ -329,6 +368,7 @@ inst_ASL:
     lsl     r0, #1
 
     mov     r4, r0
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
     mov     r0, r4
 
@@ -355,6 +395,7 @@ inst_LSR:
     lsr     r0, #1
 
     mov     r4, r0
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
     mov     r0, r4
 
@@ -390,6 +431,7 @@ inst_ROL:
     bl      set_flags_z_n
 
     mov     r0, r4                      @ r0 = new value
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
 
     pop     {r4, lr}
@@ -422,6 +464,7 @@ inst_ROR:
     bl      set_flags_z_n
 
     mov     r0, r4                      @ r0 = new value
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
 
     pop     {r4, lr}
@@ -477,6 +520,7 @@ inst_INC:
     add     r4, r0, #1                  @ r4 = byte read + 1
 
     mov     r0, r4                      @ r0 = byte read + 1
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
 
     mov     r0, r4                      @ r0 = byte read + 1
@@ -521,6 +565,7 @@ inst_DEC:
     sub     r4, r0, #1                  @ r4 = byte read - 1
 
     mov     r0, r4                      @ r0 = byte read - 1
+    mov     r1, #1                      @ r1 = reuse previous addr flag (true)
     bl      write_byte
 
     mov     r0, r4                      @ r0 = byte read - 1
@@ -1041,6 +1086,7 @@ inst_STA:
 
     ldr     r1, =reg_a                  @ r1 = pointer to accumulator
     ldrb    r0, [r1]                    @ r0 = accumulator
+    mov     r1, #0                      @ r1 = reuse previous addr flag (false)
     bl      write_byte
 
     pop     {lr}
@@ -1051,7 +1097,8 @@ inst_STX:
     push    {lr}
 
     ldr     r1, =reg_x                  @ r1 = pointer to X register
-    ldrb    r0, [r1]                    @ r0 = accumulator
+    ldrb    r0, [r1]                    @ r0 = X register
+    mov     r1, #0                      @ r1 = reuse previous addr flag (false)
     bl      write_byte
 
     pop     {lr}
@@ -1062,7 +1109,8 @@ inst_STY:
     push    {lr}
 
     ldr     r1, =reg_y                  @ r1 = pointer to Y register
-    ldrb    r0, [r1]                    @ r0 = accumulator
+    ldrb    r0, [r1]                    @ r0 = Y register
+    mov     r1, #0                      @ r1 = reuse previous addr flag (false)
     bl      write_byte
 
     pop     {lr}
