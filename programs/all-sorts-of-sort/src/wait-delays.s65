@@ -13,10 +13,34 @@
 ; You should have received a copy of the GNU General Public License
 ; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-.autoimport +
+; Wait for V-Blank 5 times as a delay
+.export wait_5_vblanks
+.proc wait_5_vblanks
+    lda     #$a4
+    sta     $1001
 
-.segment "VECTORS"
+    lda     #$a3
+    sta     $1001
 
-.addr   $0000                   ; nmi
-.addr   start                   ; reset
-.addr   $0000                   ; irq
+    lda     #$a2
+    sta     $1001
+
+    lda     #$a1
+    sta     $1001
+
+    lda     #$a0
+    sta     $1001
+
+    rts
+.endproc
+
+; Wait for a key to be pressed
+.export wait_key_press
+.proc wait_key_press
+loop:
+    lda     $1010
+    cmp     #$ff
+    beq     loop
+
+    rts
+.endproc

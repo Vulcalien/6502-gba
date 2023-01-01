@@ -7,7 +7,7 @@ bin/out.o65: $(OBJ) | bin
 	ld65 -C sbc.cfg -o $@ $^
 
 obj/%.o65: src/%.s65 | obj
-	ca65 -o $@ $<
+	ca65 -I include -o $@ $<
 
 obj bin:
 	mkdir $@

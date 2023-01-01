@@ -13,10 +13,11 @@
 ; You should have received a copy of the GNU General Public License
 ; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-.autoimport +
+; additional registers in Zero Page
+R0 = $00
+R1 = $01
+R2 = $02
+R3 = $03
 
-.segment "VECTORS"
-
-.addr   $0000                   ; nmi
-.addr   start                   ; reset
-.addr   $0000                   ; irq
+ARRAY      = $80
+ARRAY_SIZE = 15

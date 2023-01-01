@@ -1,0 +1,215 @@
+; Copyright 2022-2023 Vulcalien
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+.autoimport +
+
+.include "main.inc"
+
+.export initialize_screen
+.proc initialize_screen
+    jsr     initialize_tileset
+    jsr     draw_columns
+
+    rts
+.endproc
+
+; Set a tile in the tileset for each array element
+.proc initialize_tileset
+value = R0
+
+    lda     #$11
+    sta     value               ; value = 0x11
+
+    ldy     #0                  ; Y = counter
+
+loop:
+    cpy     #ARRAY_SIZE
+    beq     exit
+
+    ; set offset
+    tya                         ; A = counter
+
+    asl                         ; A = counter << 1
+    asl                         ;         ... << 2
+    asl                         ;         ... << 3
+    asl                         ;         ... << 4
+    asl                         ; A = counter << 5
+
+    tax                         ; X = offset (= counter << 5)
+
+    ; get value
+    lda     value               ; A = value
+
+    ; counter:
+    ;   [0, 7]  -> first  group
+    ;   [7, 15] -> second group
+    cpy     #8
+    bcs     second_group
+
+    jsr     set_first_group_tile
+    jmp     end_second_group
+
+second_group:
+    jsr     set_second_group_tile
+end_second_group:
+
+    ; increment value
+    lda     value
+    clc
+    adc     #$11                ; A = value + 0x11
+    sta     value               ; value += 0x11
+
+    iny                         ; counter++
+    jmp     loop
+
+exit:
+    rts
+.endproc
+
+.proc set_first_group_tile
+    sta     $5020, x
+    sta     $5021, x
+    sta     $5022, x
+    sta     $5023, x
+    sta     $5024, x
+    sta     $5025, x
+    sta     $5026, x
+    sta     $5027, x
+    sta     $5028, x
+    sta     $5029, x
+    sta     $502a, x
+    sta     $502b, x
+    sta     $502c, x
+    sta     $502d, x
+    sta     $502e, x
+    sta     $502f, x
+    sta     $5030, x
+    sta     $5031, x
+    sta     $5032, x
+    sta     $5033, x
+    sta     $5034, x
+    sta     $5035, x
+    sta     $5036, x
+    sta     $5037, x
+    sta     $5038, x
+    sta     $5039, x
+    sta     $503a, x
+    sta     $503b, x
+    sta     $503c, x
+    sta     $503d, x
+    sta     $503e, x
+    sta     $503f, x
+
+    rts
+.endproc
+
+.proc set_second_group_tile
+    sta     $5120, x
+    sta     $5121, x
+    sta     $5122, x
+    sta     $5123, x
+    sta     $5124, x
+    sta     $5125, x
+    sta     $5126, x
+    sta     $5127, x
+    sta     $5128, x
+    sta     $5129, x
+    sta     $512a, x
+    sta     $512b, x
+    sta     $512c, x
+    sta     $512d, x
+    sta     $512e, x
+    sta     $512f, x
+    sta     $5130, x
+    sta     $5131, x
+    sta     $5132, x
+    sta     $5133, x
+    sta     $5134, x
+    sta     $5135, x
+    sta     $5136, x
+    sta     $5137, x
+    sta     $5138, x
+    sta     $5139, x
+    sta     $513a, x
+    sta     $513b, x
+    sta     $513c, x
+    sta     $513d, x
+    sta     $513e, x
+    sta     $513f, x
+
+    rts
+.endproc
+
+; Draw the colored columns in the background
+.proc draw_columns
+    ldx     #0                  ; X = counter
+loop:
+    cpx     #(ARRAY_SIZE * 2)
+    beq     exit
+
+    txa                         ; A = counter
+    lsr                         ; A = counter // 2
+    clc
+    adc     #1                  ; A = counter // 2 + 1
+
+    sta     $4000, x
+    sta     $4001, x
+    sta     $4020, x
+    sta     $4021, x
+
+    sta     $4040, x
+    sta     $4041, x
+    sta     $4060, x
+    sta     $4061, x
+
+    sta     $4080, x
+    sta     $4081, x
+    sta     $40a0, x
+    sta     $40a1, x
+
+    sta     $40c0, x
+    sta     $40c1, x
+    sta     $40e0, x
+    sta     $40e1, x
+
+    sta     $4100, x
+    sta     $4101, x
+    sta     $4120, x
+    sta     $4121, x
+
+    sta     $4140, x
+    sta     $4141, x
+    sta     $4160, x
+    sta     $4161, x
+
+    sta     $4180, x
+    sta     $4181, x
+    sta     $41a0, x
+    sta     $41a1, x
+
+    sta     $41c0, x
+    sta     $41c1, x
+    sta     $41e0, x
+    sta     $41e1, x
+
+    ; counter += 2
+    inx
+    inx
+
+    jmp     loop
+exit:
+
+    rts
+.endproc
