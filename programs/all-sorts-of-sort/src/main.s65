@@ -1,6 +1,4 @@
-; /*
-;
-; Copyright 2022 Vulcalien
+; Copyright 2022-2023 Vulcalien
 ;
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -14,15 +12,6 @@
 ;
 ; You should have received a copy of the GNU General Public License
 ; along with this program.  If not, see <https://www.gnu.org/licenses/>.
-;
-; */
-
-* = $8000
-
-; SRAM area
-.dsb $0400, 0
-
-; ============================================================================ ;
 
 ; additional registers in Zero Page
 R0 = $00
@@ -33,8 +22,9 @@ R3 = $03
 ARRAY      = $80
 ARRAY_SIZE = 15
 
-start:
-.(
+.export start
+
+.proc start
     ; enable BG 0
     lda     #$01
     sta     $1000
@@ -44,25 +34,21 @@ start:
 
 loop:
     jsr     initialize_data
-    jsr     wait_key_press
     jsr     bubble_sort
     jsr     wait_key_press
 
     jsr     initialize_data
-    jsr     wait_key_press
     jsr     insertion_sort
     jsr     wait_key_press
 
     jsr     initialize_data
-    jsr     wait_key_press
     jsr     selection_sort
     jsr     wait_key_press
 
     jmp     loop
-.)
+.endproc
 
-set_first_group_tile:
-.(
+.proc set_first_group_tile
     sta     $5020, x
     sta     $5021, x
     sta     $5022, x
@@ -97,10 +83,9 @@ set_first_group_tile:
     sta     $503f, x
 
     rts
-.)
+.endproc
 
-set_second_group_tile:
-.(
+.proc set_second_group_tile
     sta     $5120, x
     sta     $5121, x
     sta     $5122, x
@@ -135,11 +120,10 @@ set_second_group_tile:
     sta     $513f, x
 
     rts
-.)
+.endproc
 
 ; set BG tile columns
-initialize_tiles:
-.(
+.proc initialize_tiles
 value  = R0
 
     lda     #$11
@@ -176,7 +160,7 @@ loop:
 
 second_group:
     jsr     set_second_group_tile
-end_second_group
+end_second_group:
 
     ; increment value
     lda     value
@@ -189,11 +173,10 @@ end_second_group
 
 exit:
     rts
-.)
+.endproc
 
 ; Initialize data array in RAM
-initialize_data:
-.(
+.proc initialize_data
     lda     #%00000001
     sta     ARRAY + 14
 
@@ -240,12 +223,13 @@ initialize_data:
     sta     ARRAY + 1
 
     jsr     refresh_save_x_y
+    jsr     wait_key_press
+
     rts
-.)
+.endproc
 
 ; Initialize background
-initialize_background:
-.(
+.proc initialize_background
     ldx     #0                  ; X = counter
 loop:
     cpx     #(ARRAY_SIZE * 2)
@@ -303,11 +287,10 @@ loop:
     jmp     loop
 exit:
     rts
-.)
+.endproc
 
 ; Wait for V-Blank 5 times as a delay
-wait_5_vblanks:
-.(
+.proc wait_5_vblanks
     lda     #$a4
     sta     $1001
 
@@ -324,23 +307,21 @@ wait_5_vblanks:
     sta     $1001
 
     rts
-.)
+.endproc
 
 ; Wait for a key to be pressed
-wait_key_press:
-.(
+.proc wait_key_press
 loop:
     lda     $1010
     cmp     #$ff
     beq     loop
 
     rts
-.)
+.endproc
 
 ; Refresh palette
 ; The values of X and Y registers are preserved
-refresh_save_x_y:
-.(
+.proc refresh_save_x_y
     ; push X
     txa
     pha
@@ -372,13 +353,12 @@ exit:
     tax
 
     rts
-.)
+.endproc
 
 ; ============================================================================ ;
 
 ; === BUBBLE SORT === ;
-bubble_sort:
-.(
+.proc bubble_sort
 temp = R0
 
     ldy     #0                  ; Y = outer counter (= i)
@@ -418,13 +398,12 @@ exit_inner:
 exit_outer:
 
     rts
-.)
+.endproc
 
 ; ============================================================================ ;
 
 ; === INSERTION SORT === ;
-insertion_sort:
-.(
+.proc insertion_sort
 value = R0
 
     ldy     #1                  ; Y = outer counter (= i)
@@ -469,13 +448,12 @@ exit_inner:
 exit_outer:
 
     rts
-.)
+.endproc
 
 ; ============================================================================ ;
 
 ; === SELECTION SORT === ;
-selection_sort:
-.(
+.proc selection_sort
 min = R0
 min_index = R1
 
@@ -528,19 +506,4 @@ exit_inner:
 exit_outer:
 
     rts
-.)
-
-; ============================================================================ ;
-
-; add padding bytes to reach the vectors
-.(
-start_of_padding:
-    * = $fffa
-    .dsb (* - start_of_padding), 0
-    * = $fffa
-.)
-
-; --- VECTORS ---
-    .word   $0000                       ; nmi
-    .word   start                       ; reset
-    .word   $0000                       ; irq
+.endproc
