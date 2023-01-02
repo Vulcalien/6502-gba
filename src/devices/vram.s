@@ -96,6 +96,10 @@ write_tileset_byte:
     @ Since the GBA's VRAM does not have an 8-bit
     @ data bus, 16-bit writes are used instead
 
+    @ invert first and last 4 bits
+    lsl     r2, r1, #4
+    orr     r1, r2, r1, lsr #4
+
     @ if writing a lo byte
     tst     r0, #1
     bne     1f @ else
