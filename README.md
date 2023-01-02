@@ -1,23 +1,21 @@
-# Language:
-[🇮🇹 Italiano](#emulatore-di-6502-per-game-boy-advance)
+## Language:
+- [🇮🇹 Italiano](#emulatore-di-6502-per-game-boy-advance)
 
 ***
 
-🇮🇹
 # Emulatore di 6502 per Game Boy Advance
-
 Questo progetto permette di emulare un computer basato sul processore 6502 sulla
 console portatile 'Game Boy Advance' (GBA), rilasciata da Nintendo negli anni
 2000.
 
 Questo progetto ha come intenzione quella di riesplorare questo classico
 processore, cercando di mantenere il codice quanto più chiaro e modulare
-possibile, spesso al costo dell'efficienza.\
+possibile, spesso a costo dell'efficienza.\
 L'emulatore non è da considerarsi accurato in quanto alla velocità di
 esecuzione, dato che il processore 6502 utilizza istruzioni a numero variabile
-di cicli di clock, dettaglio non implementato per semplicizzare.
+di cicli di clock, dettaglio non implementato per semplicità.
 
-## Caratteristiche "hardware"
+## Caratteristiche dell'hardware emulato
 | Tipo di memoria | Grandezza |
 | --------------- | --------- |
 | RAM             | 4 KB      |
@@ -36,18 +34,25 @@ che offre il GBA.
 Il GBA ha 10 bottoni, di cui 8 sono a disposizione dell'emulatore: 'L' ed 'R'
 sono stati rimossi.
 
-## Interfaccia 
+### Interfaccia 
 La ROM del programma per 6502 viene letta dal file di salvataggio del GBA.\
 Il primo 1 KB viene utilizzato per la SRAM dell'emulatore.
 
 ## Motivazione
-Oltre all'interesse personale per il mio primo progetto interamente in assembly,
-l'obiettivo di questo progetto è di essere presentato all'esame di 'Architettura
-degli Elaboratori'.\
-Questo emulatore infatti presenta la struttura di base di un processore ed è
-interamente realizzato in linguaggio assembly ARM 7, insegnato durante il corso.
+Oltre all'interesse personale per il mio primo programma interamente in
+assembly, l'obiettivo di questo progetto è di essere presentato all'esame di
+'Architettura degli Elaboratori'.\
+Questo emulatore infatti presenta la struttura di base di un elaboratore ed è
+interamente realizzato in linguaggio assembly ARM, insegnato durante il corso.
 
-## Risorse
+## Eseguire il programma
+Per far partire l'emulatore, servirà un emulatore per GBA.
+Se non se ne ha uno, consiglio [mGBA](https://mgba.io/downloads.html).
+
+È scaricabile l'emulatore già compilato, insieme ad un programma 6502
+dimostrativo da [questo link](https://github.com/Vulcalien/6502-gba/releases/download/latest/6502.zip).
+
+## Risorse utilizzate
 Riguardo il processore 6502:
 - [6502-emulator](https://github.com/Vulcalien/6502-emulator), un mio precedente
   emulatore scritto in C.
@@ -55,7 +60,7 @@ Riguardo il processore 6502:
   che descrive in dettaglio le istruzioni e le modalità di indirizzamento.
 
 Riguardo il GBA:
-- [GBATEK](https://problemkaputt.de/gbatek.htm), una descrizione dettagliata
+- [GBATEK](https://problemkaputt.de/gbatek.htm), una documentazione dettagliata
   della console.
 - [Minicraft per GBA](https://github.com/Vulcalien/minicraft-gba/), un mio
   progetto da cui ho preso alcuni file di configurazione e che ho talvolta usato
