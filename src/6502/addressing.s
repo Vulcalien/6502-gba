@@ -188,11 +188,29 @@ addr_INX:
 
 @ (Indirect), Y
 addr_INY:
-    push    {lr}
+    push    {r4-r5, lr}
 
-    @ TODO
+    bl      memory_fetch_byte           @ r0 = fetched byte
+    mov     r4, r0                      @ r4 = fetched byte
 
-    pop     {lr}
+    @ read lo byte
+    bl      memory_read_byte            @ r0 = lo byte
+    mov     r5, r0                      @ r5 = lo byte
+
+    @ read hi byte (may wrap around)
+    add     r0, r4, #1                  @ r0 = fetched byte + 1
+    and     r0, #0xff                   @ r0 = (fetched byte + 1) & 0xff
+    bl      memory_read_byte            @ r0 = hi byte
+
+    orr     r0, r5, r0, lsl #8          @ r0 = lo byte | hi byte << 8
+
+    @ add Y register to indirect address
+    ldr     r1, =reg_y                  @ r1 = pointer to Y register
+    ldrb    r1, [r1]                    @ r1 = Y register
+
+    add     r0, r1
+
+    pop     {r4-r5, lr}
     bx      lr
 
 .end
