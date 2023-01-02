@@ -76,6 +76,35 @@ exit:
     rts
 .endproc
 
+.export font_write
+; input:
+;   R0-R1 = string address
+;   R2-R3 = dest address
+.proc font_write
+str_addr_16  = R0 ; and R1
+dest_addr_16 = R2 ; and R3
+
+    ldy     #0                  ; Y = counter
+loop:
+    lda     (str_addr_16), y    ; A = string[counter]
+
+    ; if string[counter] == '\0' then exit
+    cmp     #0
+    beq     exit
+
+    ; transcode string character ('A' = 32)
+    sec
+    sbc     #33                 ; A = string[counter] - 33
+
+    sta     (dest_addr_16), y   ; dest[counter] = A
+
+    iny                         ; counter++
+    jmp     loop
+exit:
+
+    rts
+.endproc
+
 font:
     ; A
     .byte   $00, $0f, $f0, $00

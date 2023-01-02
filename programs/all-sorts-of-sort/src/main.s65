@@ -27,14 +27,17 @@
     jsr     initialize_font
 
 loop:
+    jsr     write_bubble_sort
     jsr     initialize_data
     jsr     bubble_sort
     jsr     wait_key_press
 
+    jsr     write_insertion_sort
     jsr     initialize_data
     jsr     insertion_sort
     jsr     wait_key_press
 
+    jsr     write_selection_sort
     jsr     initialize_data
     jsr     selection_sort
     jsr     wait_key_press
@@ -44,7 +47,7 @@ loop:
 
 ; Initialize data array in RAM
 .proc initialize_data
-    lda     #%00000001
+    lda     #%11100011
     sta     ARRAY + 14
 
     lda     #%00000000
@@ -62,7 +65,7 @@ loop:
     lda     #%10100000
     sta     ARRAY + 9
 
-    lda     #%11100011
+    lda     #%00000001
     sta     ARRAY + 8
 
     lda     #%00011100
@@ -128,6 +131,65 @@ exit:
     ; pull X
     pla
     tax
+
+    rts
+.endproc
+
+; ============================================================================ ;
+
+bubble_str:
+    .asciiz "  BUBBLE SORT  "
+
+.proc write_bubble_sort
+    lda     #<bubble_str        ; lo byte
+    sta     R0
+    lda     #>bubble_str        ; hi byte
+    sta     R0 + 1
+
+    lda     #<$4228             ; lo byte
+    sta     R2
+    lda     #>$4228             ; hi byte
+    sta     R2 + 1
+
+    jsr     font_write
+
+    rts
+.endproc
+
+insertion_str:
+    .asciiz "INSERTION SORT"
+
+.proc write_insertion_sort
+    lda     #<insertion_str     ; lo byte
+    sta     R0
+    lda     #>insertion_str     ; hi byte
+    sta     R0 + 1
+
+    lda     #<$4228             ; lo byte
+    sta     R2
+    lda     #>$4228             ; hi byte
+    sta     R2 + 1
+
+    jsr     font_write
+
+    rts
+.endproc
+
+selection_str:
+    .asciiz "SELECTION SORT"
+
+.proc write_selection_sort
+    lda     #<selection_str     ; lo byte
+    sta     R0
+    lda     #>selection_str     ; hi byte
+    sta     R0 + 1
+
+    lda     #<$4228             ; lo byte
+    sta     R2
+    lda     #>$4228             ; hi byte
+    sta     R2 + 1
+
+    jsr     font_write
 
     rts
 .endproc
