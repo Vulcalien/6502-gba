@@ -39,10 +39,10 @@ _start:
         .long   0xaf3cf087,0x8be425d6,0x72ac0a38,0x07f8d421
 
     @ Game Title
-        .ascii  "XXXXXXXXXXXX"
+        .ascii  "GBA 6502 EMU"
 
     @ Game Code
-        .ascii  "XXXX"
+        .ascii  "Z65E"
 
     @ Maker Code
         .byte   0x00,0x00
@@ -63,7 +63,7 @@ _start:
         .byte   0x00
 
     @ Complement Check
-        .byte   0xd1
+        .byte   0x89
 
     @ Reserved (2 Bytes)
         .space  2, 0x00
