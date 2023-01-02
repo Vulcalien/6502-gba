@@ -13,6 +13,10 @@
 ; You should have received a copy of the GNU General Public License
 ; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+.autoimport +
+
+.include "main.inc"
+
 ; Wait for V-Blank 5 times as a delay
 .export wait_5_vblanks
 .proc wait_5_vblanks
@@ -34,13 +38,47 @@
     rts
 .endproc
 
+press_key_str:
+    .asciiz "PRESS ANY KEY TO CONTINUE"
+press_key_clear_str:
+    .asciiz "                         "
+
+TEXT_OUTPUT = $4260
+
 ; Wait for a key to be pressed
 .export wait_key_press
 .proc wait_key_press
+    ; write 'PRESS ANY KEY' text
+    lda     #<press_key_str     ; lo byte
+    sta     R0
+    lda     #>press_key_str     ; hi byte
+    sta     R0 + 1
+
+    lda     #<TEXT_OUTPUT       ; lo byte
+    sta     R2
+    lda     #>TEXT_OUTPUT       ; hi byte
+    sta     R2 + 1
+
+    jsr     font_write
+
+    ; wait for any key to be pressed
 loop:
     lda     $1010
     cmp     #$ff
     beq     loop
+
+    ; clear 'PRESS ANY KEY' text
+    lda     #<press_key_clear_str   ; lo byte
+    sta     R0
+    lda     #>press_key_clear_str   ; hi byte
+    sta     R0 + 1
+
+    lda     #<TEXT_OUTPUT       ; lo byte
+    sta     R2
+    lda     #>TEXT_OUTPUT       ; hi byte
+    sta     R2 + 1
+
+    jsr     font_write
 
     rts
 .endproc
