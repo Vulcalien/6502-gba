@@ -1,0 +1,339 @@
+; Copyright 2022-2023 Vulcalien
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+.include "main.inc"
+
+.export initialize_font
+.proc initialize_font
+src_addr_16  = R0 ; and R1
+dest_addr_16 = R2 ; and R3
+
+    ; initialize src_addr
+    lda     #<font              ; lo byte
+    sta     src_addr_16
+    lda     #>font              ; hi byte
+    sta     src_addr_16 + 1
+
+    ; initialize dest_addr
+    lda     #<$5400             ; lo byte
+    sta     dest_addr_16
+    lda     #>$5400             ; hi byte
+    sta     dest_addr_16 + 1
+
+    ldx     #0                  ; X = letter counter
+loop:
+    cpx     #26
+    beq     exit
+
+    ; draw all bytes to dest_addr
+    ldy     #0                  ; Y = byte counter
+byte_loop:
+    cpy     #32
+    beq     exit_byte_loop
+
+    ; (*dest)[byte counter] = (*src)[byte counter]
+    lda     (src_addr_16), y    ; A = (*src)[byte counter]
+    sta     (dest_addr_16), y   ; (*dest)[byte counter] = A
+
+    iny                         ; byte counter++
+    jmp     byte_loop
+exit_byte_loop:
+
+    ; add 32 to src_addr
+    clc
+    lda     src_addr_16         ; lo byte
+    adc     #32
+    sta     src_addr_16
+    lda     src_addr_16 + 1     ; hi byte
+    adc     #0                  ; this adds the carry flag, if set
+    sta     src_addr_16 + 1
+
+    ; add 32 to dest_addr
+    clc
+    lda     dest_addr_16        ; lo byte
+    adc     #32
+    sta     dest_addr_16
+    lda     dest_addr_16 + 1    ; hi byte
+    adc     #0                  ; this adds the carry flag, if set
+    sta     dest_addr_16 + 1
+
+    inx                         ; letter counter++
+    jmp     loop
+exit:
+
+    rts
+.endproc
+
+font:
+    ; A
+    .byte   $00, $0f, $f0, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+
+    ; B
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $00
+
+    ; C
+    .byte   $00, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $00, $ff, $ff, $f0
+
+    ; D
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $00
+
+    ; E
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $ff, $ff, $f0
+
+    ; F
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+
+    ; G
+    .byte   $00, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $ff, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $ff, $ff, $f0
+
+    ; H
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+
+    ; I
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $0f, $ff, $ff, $f0
+
+    ; J
+    .byte   $00, $ff, $ff, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $0f, $00, $f0, $00
+    .byte   $00, $ff, $00, $00
+
+    ; K
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $0f, $00
+    .byte   $0f, $00, $f0, $00
+    .byte   $0f, $0f, $00, $00
+    .byte   $0f, $f0, $00, $00
+    .byte   $0f, $0f, $00, $00
+    .byte   $0f, $00, $f0, $00
+    .byte   $0f, $00, $0f, $00
+
+    ; L
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $ff, $ff, $f0
+
+    ; M
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $f0, $0f, $f0
+    .byte   $0f, $0f, $f0, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+
+    ; N
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $f0, $00, $f0
+    .byte   $0f, $0f, $00, $f0
+    .byte   $0f, $00, $f0, $f0
+    .byte   $0f, $00, $0f, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+
+    ; O
+    .byte   $00, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $ff, $ff, $00
+
+    ; P
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+
+    ; Q
+    .byte   $00, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $f0, $f0
+    .byte   $0f, $00, $0f, $00
+    .byte   $00, $ff, $f0, $f0
+
+    ; R
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $ff, $ff, $00
+    .byte   $0f, $00, $f0, $00
+    .byte   $0f, $00, $0f, $00
+    .byte   $0f, $00, $00, $f0
+
+    ; S
+    .byte   $00, $ff, $ff, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $00, $ff, $ff, $00
+    .byte   $00, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $ff, $ff, $00
+
+    ; T
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+
+    ; U
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $ff, $ff, $00
+
+    ; V
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $0f, $f0, $00
+
+    ; W
+    ; TODO
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+    .byte   $00, $00, $00, $00
+
+    ; X
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+    .byte   $00, $f0, $0f, $00
+    .byte   $00, $0f, $f0, $00
+    .byte   $00, $0f, $f0, $00
+    .byte   $00, $f0, $0f, $00
+    .byte   $0f, $00, $00, $f0
+    .byte   $0f, $00, $00, $f0
+
+    ; Y
+    .byte   $0f, $00, $0f, $00
+    .byte   $0f, $00, $0f, $00
+    .byte   $00, $f0, $f0, $00
+    .byte   $00, $f0, $f0, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $0f, $00, $00
+
+    ; Z
+    .byte   $0f, $ff, $ff, $f0
+    .byte   $00, $00, $00, $f0
+    .byte   $00, $00, $0f, $00
+    .byte   $00, $00, $f0, $00
+    .byte   $00, $0f, $00, $00
+    .byte   $00, $f0, $00, $00
+    .byte   $0f, $00, $00, $00
+    .byte   $0f, $ff, $ff, $f0

@@ -24,6 +24,7 @@
     sta     $1000
 
     jsr     initialize_screen
+    jsr     initialize_font
 
 loop:
     jsr     initialize_data
