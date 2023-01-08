@@ -45,7 +45,7 @@ Queste due linee invece permettono all'assembler di inserire in quella locazione
 Viene garantito che i registri da r4 in su mantengano il loro valore anche dopo aver chiamato una funzione. Questo significa che una funzione che intenda usare quei registri, deve prima conservarli nello stack e poi riprenderli.
 
 Alcune funzioni specificano dei parametri in input e dei risultati in output. Esempio:
-```arm
+```asm
 @ input:
 @   r0 = addr
 @
@@ -56,7 +56,7 @@ memory_read_byte:
 ```
 
 ### Registri
-```arm
+```asm
 .data
 
 .global reg_pc, reg_a, reg_x, reg_y, reg_s, reg_status
@@ -77,7 +77,7 @@ Si noti che `reg_pc` è l'unico allocato come halfword, dato che è un register 
 ### Memoria
 La memoria, come detto prima, è l'unico collegamento tra il processore 6502 e l'hardware che controlla.\
 Le funzioni `memory_read_byte` e `memory_write_byte` non sono altro che 'wrapper' delle funzioni `cpu_read_byte` e `cpu_write_byte`, con il compito di sanificare gli input:
-```arm
+```asm
 .global memory_read_byte
 @ input:
 @   r0 = addr
@@ -120,7 +120,7 @@ memory_write_byte:
 In particolare, `addr` diventa sempre un valore a 16-bit, mentre il valore letto o da scrivere sempre a 8-bit.
 
 La funzione `memory_fetch_byte` legge un byte e poi incrementa il Program Counter.
-```arm
+```asm
 .global memory_fetch_byte
 @ output:
 @   r0 = fetched byte
@@ -145,7 +145,7 @@ Sono usate anche `memory_read_word`, `memory_write_word` e `memory_fetch_word` p
 
 ### Stack
 Dato che lo Stack Pointer è un registro a 8-bit, naturalmente sono disponibili solo 256 byte per lo stack. Questa è l'implementazione di `stack_pull_byte`. L'implementazione di `stack_push_byte` è molto simile.
-```arm
+```asm
 .global stack_pull_byte
 @ output:
 @   r0 = pulled byte
@@ -175,7 +175,7 @@ Queste due informazioni sono codificate in un solo byte: per esempio, `A9` indic
 
 Sebbene nel 6502 il numero di 'step' varia molto tra istruzioni e modi di indirizzamento vari, in questo emulatore ho riassunto tutta l'esecuzione in tre fasi: Fetch, Decode e Execute.
 
-```arm
+```asm
 .global cpu_run_instruction
 cpu_run_instruction:
     push    {lr}
@@ -189,7 +189,7 @@ cpu_run_instruction:
 ```
 
 `memory_fetch_byte` preleva il byte dell'istruzione e lo passa alla funzione `decode_instruction` che decodifica il valore:
-```arm
+```asm
 .global decode_instruction
 @ input:
 @   r0 = instruction
@@ -218,7 +218,7 @@ In questa funzione si utilizza una 'lookup table' di puntatori a funzione: `inst
 Utilizzando il byte dell'istruzione come indice, si ottengono i puntatori alla funzione del modo di indirizzamento, che si salva in memoria, e il puntatore alla funzione dell'istruzione, che si passa poi a `execute_instruction`.
 
 Vediamo ora `execute_instruction`:
-```arm
+```asm
 .global execute_instruction
 @ input:
 @   r0 = 6502 instruction address
@@ -237,7 +237,7 @@ execute_instruction:
 La funzione è semplicissima: prima, imposta manualmente il Link Register all'istruzione successiva alla chiamata; poi chiama la funzione in `r0`, cioè il puntatore alla funzione dell'istruzione.
 
 Nota sull'implementazione: visto che la funzione ritorna subito dopo aver chiamato l'istruzione, salvare il Link Register è superfluo. Ho preferito farlo ugualmente per semplicità, invece di scrivere:
-```arm
+```asm
 execute_instruction:
     @ call 6502 instruction
     bx      r0
@@ -250,7 +250,7 @@ Il processore 6502 .. # TODO
 Come detto, il processore 6502 ha 56 istruzioni. Tutte sono state implementate come funzioni indipendenti. Ne esporrò solo qualcuna.
 
 `NOP`, la più semplice, non fa nulla.
-```arm
+```asm
 @ NOP - no operation
 inst_NOP:
     bx      lr
@@ -258,7 +258,7 @@ inst_NOP:
 
 `LDA`: legge un byte e lo salva nel registro Accumulatore. `read_byte` è una funzione che legge un byte basandosi sul modo di indirizzamento.\
 Alla fine viene chiamata `set_flags_z_n`, che imposta i bit Z (zero) e N (negativo) del Processor Status.
-```arm
+```asm
 @ LDA - load accumulator
 inst_LDA:
     push    {lr}
@@ -274,7 +274,7 @@ inst_LDA:
 ```
 
 `AND`: and logico tra l'Accumulatore e un operando in memoria, deciso dal modo di indirizzamento.
-```arm
+```asm
 @ AND - logical AND
 inst_AND:
     push    {lr}
@@ -293,7 +293,7 @@ inst_AND:
 ```
 
 `PHA`: salva l'Accumulatore nello stack.
-```arm
+```asm
 @ PHA - push accumulator
 inst_PHA:
     push    {lr}
@@ -308,7 +308,7 @@ inst_PHA:
 ```
 
 `BEQ`: salto condizionato, eseguito solo se il flag Z (zero) del Processor Status vale 1.
-```arm
+```asm
 @ BEQ - branch if equal
 inst_BEQ:
     push    {lr}
@@ -328,7 +328,7 @@ Le istruzioni possono operare secondo alcuni modi di indirizzamento. Rispetto ad
 Ad esempio, `IMM` (immediato) pone l'operando subito dopo l'istruzione, `ABS` (assoluto) invece specifica l'indirizzo assoluto dal quale prelevare l'operando.
 
 Le funzioni di indirizzamento non fanno altro che prelevare l'indirizzo dell'operando, ad esempio `ABS` è implementato così:
-```arm
+```asm
 @ Absolute
 addr_ABS:
     b       memory_fetch_word           @ redirect to memory_fetch_word
@@ -336,7 +336,7 @@ addr_ABS:
 Infatti, l'indirizzo è una word di 16-bit presente subito dopo il byte dell'istruzione.
 
 `ABX` (Assoluto + X) invece preleva prima l'indirizzo e poi aggiunge il valore del registro X.
-```arm
+```asm
 @ Absolute, X
 addr_ABX:
     push    {lr}
@@ -361,7 +361,7 @@ Vista la natura modulare del progetto, la parte di codice che emula il processor
 `cpu_reset` invece si comporta come un'interrupt di RESET e prepara il modulo 6502 ad eseguire il codice che gestisce quell'interrupt.
 
 Ecco la funzione `AgbMain` che va considerata come punto di ingresso dell'intero emulatore:
-```arm
+```asm
 .global AgbMain
 AgbMain:
     bl      init
@@ -391,7 +391,7 @@ I dispositivi hardware presenti sono 'mappati' alla memoria: ognuno è assegnato
 ### Data bus
 Le due funzioni `cpu_read_byte` e `cpu_write_byte` implementano il data bus e hanno la responsabilità di trasferire un byte ai i dispositivi hardware oppure di leggerne uno e restituirlo al modulo 6502.
 
-```arm
+```asm
 .global cpu_read_byte
 @ input:
 @   r0 = addr
@@ -427,7 +427,7 @@ Se quella funzione è definita (cioè se un dispositivo è mappato a quella memo
 `cpu_write_byte` è implementata similmente.
 
 La lookup table `memory_map` è definita nel file 'src/memory_map.s' così:
-```arm
+```asm
 @ For each memory page there are 8 bytes:
 @   4 - read  byte function
 @   4 - write byte function
@@ -444,7 +444,7 @@ memory_map:
 ### RAM
 L'implementazione della RAM è semplicissima: vengono allocati 4 KiloByte nella sezione BSS (memoria non inizializzata) del Game Boy Advance, dai quali si leggono e scrivono i byte.\
 Ecco l'intera implementazione:
-```arm
+```asm
 @ Allocate 6502 RAM in BSS section @
 .bss
 ram_start_address:
@@ -503,7 +503,7 @@ Se ad esempio si vuole scrivere 'A A A' sullo schermo, invece di ridisegnare i p
 L'emulatore offre 4 'background' diversi e due 'tileset' da 64 tile. Il secondo tileset è attualmente inutilizzato.
 
 Il dispositivo della VRAM è di sola scrittura ed è così diviso:
-```arm
+```asm
 @@@ VRAM Structure (8 KB) @@@
 @ 1 KB - BG0 (32x32)
 @ 1 KB - BG1 (32x32)
@@ -515,7 +515,7 @@ Il dispositivo della VRAM è di sola scrittura ed è così diviso:
 ```
 
 La funzione `vram_write_byte` si occupa di dividere le scritture ai background da quelle ai tileset. Per questi ultimi viene chiamata la funzione `write_tileset_byte` passando come parametro l'indirizzo del tileset a cui si sta scrivendo.
-```arm
+```asm
 @ input:
 @   r0 = GBA addr
 @   r1 = value
@@ -567,7 +567,7 @@ L'emulatore presenta dei registri I/O hardware: `DISPLAY_CONTROL`, `VCOUNT` e `K
 
 `DISPLAY_CONTROL` corrisponde ad un registro del Game Boy Advance e la sua funzione è di attivare o disattivare i background dello schermo.\
 Le funzioni di lettura e scrittura fanno da interfaccia tra l'emulatore ed il GBA:
-```arm
+```asm
 @@@ DISPLAY CONTROL @@@
 @   bits    meaning         value
 @
@@ -603,7 +603,7 @@ DISPLAY_CONTROL_write:
 `VCOUNT` è un numero che indica a che punto del refresh si trova lo schermo, utile per il 'V-Sync'. Il registro restituisce il valore alla lettura, mentre attende che si raggiunga il valore desiderato alla scrittura.
 
 `KEY_INPUT` (sola lettura) restituisce la situazione degli 8 bottoni a disposizione dell'emulatore:
-```arm
+```asm
 @@@ KEY INPUT @@@
 @   bits    meaning         value
 @
@@ -630,7 +630,7 @@ KEY_INPUT_read:
 Vista la descrizione dell'emulatore, ritengo opportuno mostrare un esempio di programma fatto per esso.\
 In 'programs/all-sorts-of-sort' si può vedere un programma in assembly 6502 che mostra visivamente l'esecuzione di tre algoritmi di ordinamento.
 
-```6502
+```asm
 .export start
 .proc start
     ; enable BG 0
@@ -665,7 +665,7 @@ Poi, inizializza lo schermo e il font. Senza entrare nel dettaglio, questo vuol 
 Infine, ripete infinitamente gli algoritmi di ordinamento, attendendo che l'utente prema un bottone prima di passare al successivo.
 
 Il Bubble Sort è così implementato:
-```6502
+```asm
 .export bubble_sort
 .proc bubble_sort
 temp = R0
