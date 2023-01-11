@@ -42,7 +42,7 @@ Queste due linee invece permettono all'assembler di inserire in quella locazione
     .pool
 ```
 
-Viene garantito che i registri da r4 in su mantengano il loro valore anche dopo aver chiamato una funzione. Questo significa che una funzione che intenda usare quei registri, deve prima conservarli nello stack e poi riprenderli.
+Viene garantito che i registri da r4 in su mantengano il loro valore anche dopo aver chiamato una funzione: questo significa che se una funzione intende usare quei registri deve prima conservarli nello stack e poi riprenderli.
 
 Alcune funzioni specificano dei parametri in input e dei risultati in output. Esempio:
 ```asm
@@ -72,7 +72,7 @@ reg_s:      .byte 0                     @ Stack Pointer
 reg_status: .byte 0                     @ Processor Status
 ```
 I registri emulati sono posti nella sezione `.data`, resi disponibili a tutti i file tramite `.global` e infine allocati con `.hword` e `.byte`.\
-Si noti che `reg_pc` è l'unico allocato come halfword, dato che è un register da 16-bit.
+Si noti che `reg_pc` è l'unico allocato come halfword, dato che è un registro da 16-bit.
 
 ### Memoria
 La memoria, come detto prima, è l'unico collegamento tra il processore 6502 e l'hardware che controlla.\
@@ -167,10 +167,10 @@ stack_pull_byte:
     bx      lr
 ```
 Si noti come il valore di SP può andare in overflow dopo `add r0, #1`.\
-Inoltre, viene aggiunto 0x100 (256) prima di leggere da memoria: lo stack, è infatti collocato nell'area di indirizzo `0100 ... 01ff`.
+Inoltre, viene aggiunto 0x100 (256) prima di leggere da memoria: lo stack è infatti collocato nell'area di indirizzo `0100 ... 01ff`.
 
 ### Esecuzione di un'istruzione
-Il processore 6502 ha 56 istruzioni. Molte di queste istruzioni supporta più di un 'modo di indirizzamento' dei dati.\
+Il processore 6502 ha 56 istruzioni. Molte di queste istruzioni supportano più di un 'modo di indirizzamento' dei dati.\
 Queste due informazioni sono codificate in un solo byte: per esempio, `A9` indica un'istruzione di `LDA` (load accumulator) con modo di indirizzamento 'immediato'.
 
 Sebbene nel 6502 il numero di 'step' varia molto tra istruzioni e modi di indirizzamento vari, in questo emulatore ho riassunto tutta l'esecuzione in tre fasi: Fetch, Decode e Execute.
@@ -243,13 +243,10 @@ execute_instruction:
     bx      r0
 ```
 
-### Riguardo la pipeline
-Il processore 6502 .. # TODO
-
 ### Istruzioni
 Come detto, il processore 6502 ha 56 istruzioni. Tutte sono state implementate come funzioni indipendenti. Ne esporrò solo qualcuna.
 
-`NOP`, la più semplice, non fa nulla.
+`NOP`: la più semplice, non fa nulla.
 ```asm
 @ NOP - no operation
 inst_NOP:
@@ -377,7 +374,7 @@ Dettaglio dell'implementazione: prima di eseguire `AgbMain` una parte di codice 
 
 ***
 
-I dispositivi hardware presenti sono 'mappati' alla memoria: ognuno è assegnato ad una o più 'memory page', cioè il byte più significativo di un'indirizzo.
+I dispositivi hardware presenti sono 'mappati' alla memoria: ognuno è assegnato ad una o più 'memory page', cioè blocchi di memoria da 256 byte ciascuno.
 
 | Dispositivo   | Memory Page(s) | Grandezza |
 | ------------- | -------------- | --------- |
@@ -389,7 +386,7 @@ I dispositivi hardware presenti sono 'mappati' alla memoria: ognuno è assegnato
 | ROM           | 84 - ff        | 31 KB     |
 
 ### Data bus
-Le due funzioni `cpu_read_byte` e `cpu_write_byte` implementano il data bus e hanno la responsabilità di trasferire un byte ai i dispositivi hardware oppure di leggerne uno e restituirlo al modulo 6502.
+Le due funzioni `cpu_read_byte` e `cpu_write_byte` implementano il data bus e hanno la responsabilità di trasferire un byte ai dispositivi hardware oppure di leggerne uno e restituirlo al modulo 6502.
 
 ```asm
 .global cpu_read_byte
@@ -562,6 +559,8 @@ Ogni colore della palette è poi un colore RGB a 8-bit:
 R R R  G G G  B B
 ```
 
+La palette può essere modificata scrivendo alla Palette RAM.
+
 ### I/O Registers
 L'emulatore presenta dei registri I/O hardware: `DISPLAY_CONTROL`, `VCOUNT` e `KEY_INPUT`.
 
@@ -600,9 +599,9 @@ DISPLAY_CONTROL_write:
     bx      lr
 ```
 
-`VCOUNT` è un numero che indica a che punto del refresh si trova lo schermo, utile per il 'V-Sync'. Il registro restituisce il valore alla lettura, mentre attende che si raggiunga il valore desiderato alla scrittura.
+`VCOUNT` è un numero che indica a che punto del refresh si trova lo schermo, utile per il 'V-Sync'. Il registro restituisce il valore alla lettura, mentre in scrittura l'emulatore attende che il VCOUNT raggiunga il valore indicato.
 
-`KEY_INPUT` (sola lettura) restituisce la situazione degli 8 bottoni a disposizione dell'emulatore:
+`KEY_INPUT` (sola lettura) restituisce lo stato degli 8 bottoni a disposizione dell'emulatore:
 ```asm
 @@@ KEY INPUT @@@
 @   bits    meaning         value
@@ -695,7 +694,7 @@ inner_loop:
     lda     temp                ; A = temp
     sta     ARRAY, x            ; ARRAY[j] = temp
 
-    jsr     refresh_save_x_y    ; fa il refresh dello screen senza modificare X ed Y
+    jsr     refresh_save_x_y    ; fa il refresh dello schermo senza modificare X ed Y
 do_not_swap:
 
     inx                         ; inner counter++
@@ -711,7 +710,7 @@ exit_outer:
 ```
 
 La funzione utilizza i registri X e Y come indici dell'array.\
-Per mancanza di registri, si utililizza `temp`, un registro ausiliario in memoria, insieme all'accumulatore.
+Per mancanza di registri, durante lo swap, oltre all'accumulatore, si utililizza `temp`, un registro ausiliario in memoria.
 
 L'istruzione `lda ARRAY, x` è un esempio di indirizzamento indicizzato. In questo caso, la variabile X fa da indice da sommare all'indirizzo di base ARRAY.
 
