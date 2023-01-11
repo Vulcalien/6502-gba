@@ -31,15 +31,15 @@ Tutti i dispositivi hardware collegati ad esso sono mappati in memoria.\
 Presenta tre tipi di interrupt: IRQ, NMI e RESET.
 
 ### Note al codice in assemby ARM
-Questo significa che si vuole porre il codice nella IWRAM del Game Boy Advance, cioè la memoria più veloce del dispositivo.
+Questo significa che si vuole porre il codice nella IWRAM del Game Boy Advance, cioè la memoria più veloce del dispositivo:
 ```asm
-    .section .iwram, "ax"
+.section .iwram, "ax"
 ```
 
-Queste due linee invece permettono all'assembler di inserire in quella locazione una "literal pool".
+Queste due linee invece permettono all'assembler di inserire in quella locazione una "literal pool":
 ```asm
-    .align
-    .pool
+.align
+.pool
 ```
 
 Viene garantito che i registri da r4 in su mantengano il loro valore anche dopo aver chiamato una funzione: questo significa che se una funzione intende usare quei registri deve prima conservarli nello stack e poi riprenderli.
