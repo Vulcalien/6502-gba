@@ -1,4 +1,4 @@
-@ Copyright 2022 Vulcalien
+@ Copyright 2022-2023 Vulcalien
 @
 @ This program is free software: you can redistribute it and/or modify
 @ it under the terms of the GNU General Public License as published by
@@ -27,16 +27,16 @@ _start:
         b start_vector
 
     @ Nintendo Logo
-        .long   0x51aeff24,0x21a29a69,0x0a82843d
-        .long   0xad09e484,0x988b2411,0x217f81c0,0x19be52a3
-        .long   0x20ce0993,0x4a4a4610,0xec3127f8,0x33e8c758
-        .long   0xbfcee382,0x94dff485,0xc1094bce,0xc08a5694
-        .long   0xfca77213,0x734d849f,0x619acaa3,0x27a39758
-        .long   0x769803fc,0x61c71d23,0x56ae0403,0x008438bf
-        .long   0xfd0ea740,0x03fe52ff,0xf130956f,0x85c0fb97
-        .long   0x2580d660,0x03be63a9,0xe2384e01,0xff34a2f9
-        .long   0x44033ebb,0xcb900078,0x943a1188,0x637cc065
-        .long   0xaf3cf087,0x8be425d6,0x72ac0a38,0x07f8d421
+        .word   0x51aeff24, 0x21a29a69, 0x0a82843d
+        .word   0xad09e484, 0x988b2411, 0x217f81c0, 0x19be52a3
+        .word   0x20ce0993, 0x4a4a4610, 0xec3127f8, 0x33e8c758
+        .word   0xbfcee382, 0x94dff485, 0xc1094bce, 0xc08a5694
+        .word   0xfca77213, 0x734d849f, 0x619acaa3, 0x27a39758
+        .word   0x769803fc, 0x61c71d23, 0x56ae0403, 0x008438bf
+        .word   0xfd0ea740, 0x03fe52ff, 0xf130956f, 0x85c0fb97
+        .word   0x2580d660, 0x03be63a9, 0xe2384e01, 0xff34a2f9
+        .word   0x44033ebb, 0xcb900078, 0x943a1188, 0x637cc065
+        .word   0xaf3cf087, 0x8be425d6, 0x72ac0a38, 0x07f8d421
 
     @ Game Title
         .ascii  "GBA 6502 EMU"
@@ -45,7 +45,7 @@ _start:
         .ascii  "Z65E"
 
     @ Maker Code
-        .byte   0x00,0x00
+        .byte   0x00, 0x00
 
     @ Fixed value
         .byte   0x96
@@ -75,7 +75,6 @@ _start:
     @ Cart Backup ID
         .ascii  "SRAM_Vnnn"
 
-.global start_vector
 .align
 .arm
 start_vector:
@@ -95,37 +94,32 @@ start_vector:
 
         .thumb
 
-        @ Clear EWRAM
-        mov     r1, #0x40
-        lsl     r1, #12                 @ r1 = 0x40000
-        lsl     r0, r1, #7              @ r0 = 0x2000000
+        @ Clear .sbss section
+        ldr     r0, =__sbss_start
+        ldr     r1, =__sbss_size
         bl      ClearMem
 
-        @ Clear IWRAM
-        mov     r0, #3
-        lsl     r0, #24                 @ r0 = 0x3000000
-        ldr     r1, =__sp_usr_offset - 16
+        @ Clear .bss section
+        ldr     r0, =__bss_start
+        ldr     r1, =__bss_size
         bl      ClearMem
 
         @ Copy .data section
         ldr     r0, =__data_lma
         ldr     r1, =__data_start
-        ldr     r2, =__data_end
-        sub     r2, r1
+        ldr     r2, =__data_size
         bl      CopyMem
 
         @ Copy .ewram section
         ldr     r0, =__ewram_lma
         ldr     r1, =__ewram_start
-        ldr     r2, =__ewram_end
-        sub     r2, r1
+        ldr     r2, =__ewram_size
         bl      CopyMem
 
         @ Copy .iwram section
         ldr     r0, =__iwram_lma
         ldr     r1, =__iwram_start
-        ldr     r2, =__iwram_end
-        sub     r2, r1
+        ldr     r2, =__iwram_size
         bl      CopyMem
 
         @ Call AgbMain
